@@ -19,7 +19,7 @@ The task is to help New York City Department of Transportation prioritize street
 - We will decide on other roles or tasks as we move forward
 
 ### Gantt chart:
-![gantt](Proj_mgmt_plan.PNGa)
+![gantt](Proj_mgmt_plan.PNG)
 
 ### Questions for the client?
 - Can we have all 4 (a, b, c, d) releases of LION from 2018-2020?
