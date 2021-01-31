@@ -6,13 +6,13 @@ The task is to help New York City Department of Transportation prioritize street
 - Which streets had a bike lane added in 2018-2020?
 - What is our unit of analysis for time? (year? month? think seasonal changes)
 - What is the ridership change before/after a specific bike lane was added?
-	What other factors affect ridership?
+- What other factors affect ridership?
 ### Questions about the method: 
-How will we calculate ‘ridership’ on a street?
-Initial thoughts: do an intersect
-But it will probably need to be buffered since people don’t bike on the centerline
-How do we repeat that for every street
-What if the before and after periods are of different length
+- How will we calculate ‘ridership’ on a street?
+	- Initial thoughts: do an intersect
+		- But it will probably need to be buffered since people don’t bike on the centerline
+		- How do we repeat that for every street
+		- What if the before and after periods are of different length
 
 ### What are the team roles?
 We all want to contribute to the markdown, but we will split up tasks as they arise
