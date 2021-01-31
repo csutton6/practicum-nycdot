@@ -15,12 +15,13 @@ The task is to help New York City Department of Transportation prioritize street
 		- What if the before and after periods are of different length
 
 ### What are the team roles?
-We all want to contribute to the markdown, but we will split up tasks as they arise
-We will decide on other roles or tasks as we move forward
+- We all want to contribute to the markdown, but we will split up tasks as they arise
+- We will decide on other roles or tasks as we move forward
 
 ### Gantt chart:
 
+
 ### Questions for the client?
-Can we have all 4 (a, b, c, d) releases of LION from 2018-2020?
-What do the levels of the BikeLane column indicate?
+- Can we have all 4 (a, b, c, d) releases of LION from 2018-2020?
+- What do the levels of the BikeLane column indicate?
 
