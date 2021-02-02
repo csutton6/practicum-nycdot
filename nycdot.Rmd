@@ -2,9 +2,9 @@
 title: "NYCDOT"
 author: "Jiaxuan Lyu, Kate Sutton, Xintian Stella Li"
 date: "1/31/2021"
-output: html_document
+output: rmarkdown::github_document
 ---
-
+## Set up the boxr api
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 # install.packages('boxr')
@@ -28,5 +28,6 @@ box_ls()
 box_setwd(130657584748)
 # dat <- box_read(771482435266)
 ```
+
 
 Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
