@@ -27,5 +27,3 @@ The task is to help New York City Department of Transportation prioritize street
 
 ### Questions for the client?
 - Can we have the b, c, and d releases of LION from 2018-2019? Mayb also 2017d?
-- What do the levels of the BikeLane column indicate?
-
