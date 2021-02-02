@@ -8,6 +8,10 @@ The task is to help New York City Department of Transportation prioritize street
 - What is the ridership change before/after a specific bike lane was added?
 - What other factors affect ridership?
 ### Questions about the method: 
+- Box issues
+	- same authentication problem as Tyler
+	- how to read in a shapefile? Documentation only has csv, tsv, json, excel, rds
+	- how to read in .gdb for the lion data? 
 - How will we calculate ‘ridership’ on a street?
 	- Initial thoughts: do an intersect
 		- But it will probably need to be buffered since people don’t bike on the centerline
@@ -22,6 +26,6 @@ The task is to help New York City Department of Transportation prioritize street
 ![gantt](Proj_mgmt_plan.PNG)
 
 ### Questions for the client?
-- Can we have all 4 (a, b, c, d) releases of LION from 2018-2020?
+- Can we have the b, c, and d releases of LION from 2018-2019? Mayb also 2017d?
 - What do the levels of the BikeLane column indicate?
 
