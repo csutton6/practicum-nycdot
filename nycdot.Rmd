@@ -31,3 +31,59 @@ box_setwd(130657584748)
 
 
 Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+
+
+
+
+#Visualization
+```{r vispackage}
+library(tidyverse)
+library(sf)
+library(lubridate)
+```
+
+#Used 2018 ride data in April
+
+```{r loaddata}
+rideApr <- st_read("E:/NYCDOT/RideInsights_trim/ride2018Apr/ride2018Apr_sf.shp")
+
+#add time
+rideApr <- rideApr %>%
+  mutate(time = ymd_hms(rcrd_tm)) %>%
+  mutate(rhour = hour(time)) %>%
+  mutate(days = substr(rdate, 9, 10))
+```
+
+
+```{r vis1}
+#trips by days
+ggplot()+
+  geom_sf(data = rideApr) +
+  facet_wrap(~days)
+
+#trips by hours in one day
+ggplot()+
+  geom_sf(data = rideApr %>%
+            filter(days == "01")) +
+  facet_wrap(~rhour)
+```
+
+
+```{r vis2}
+#change days as numeric
+rideApr$days <- as.numeric(rideApr$days)
+
+#trips over days
+ggplot(rideApr %>%
+       as.data.frame() %>%
+       group_by(days) %>%
+       tally())+
+  geom_line(aes(x = days, y = n))
+
+#trips over hour
+ggplot(rideApr %>%
+         as.data.frame() %>%
+         group_by(rhour) %>%
+         tally())+
+  geom_line(aes(x = rhour, y = n))
+```
