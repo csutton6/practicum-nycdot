@@ -1,5 +1,6 @@
 # MUSA Practium: NYCDOT
 Used for 2021 Practicum project on bike infrastructure with NYC DOT
+
 Group Member: Kate Sutton, Jiaxuan Lyu, Xintian Stella Li
 
 <br>
