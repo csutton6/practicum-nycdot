@@ -1,7 +1,9 @@
 # Data wrangling / Exploratory analysis
 
 
-## Data Cleaning
+## Trip Data
+
+### Data Cleaning
 
 There are two types of data that needed to be clean. The first type is that the tracks are outside of New York City, and they are not connect to the NYC. Like Figure 1, which is March 5th, there are tracks in Montreal.
 <img src="https://github.com/kateesutt/practicum-nycdot/blob/main/images/type1_March5th.png" width="80%" height="40%">
@@ -12,3 +14,9 @@ The other type is that the tracks are outside of New York City, and they are con
 <img src="https://github.com/kateesutt/practicum-nycdot/blob/main/images/type2_March25th.png" width="80%" height="40%">
 
 Figure 2. Tracks in March 25th, 2018.
+
+The first type of data could be cleaned by using clip. We clip the trip line strings within the NYC boundary. For the second type, we at first buffered the NYC boundary, then do the clip, and we also find out the points which intersect with the buffered boundary. To illustrate, we need to buffer the NYC boundary because some of tracks are close to shorelines. If the shape file of boundary is not buffered, these tracks will not be included. Then we select out the linestrings which intersect with the buffered boundary. 
+
+
+### Spatial and Temporal Visualizations
+
