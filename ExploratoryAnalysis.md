@@ -38,19 +38,19 @@ Even when we use more fine-grained boundary, like shorlines of NYC to clip the d
 ### Part 2 Spatial and Temporal Visualizations
 #### Ridership Trend in 2018
 
-<img src="https://github.com/kateesutt/practicum-nycdot/blob/main/images/hourly_T.png" width="80%" height="40%"><br>
+<img src="https://github.com/kateesutt/practicum-nycdot/blob/main/images/hourly_T.png" ><br>
 
 The ridership by 24-hours, 2018
 
 As you can see from the figure above, the trend within a day, 24 hours, remains similar for all 10 months. The morning peak appreas around 12:00 pm and the evening peak appears around 9:00 pm. Ridership decrease in midnight and early morning, the lowest ridership appears in 7:30 am.
 
-<img src="https://github.com/kateesutt/practicum-nycdot/blob/main/images/weekly_T.png" width="80%" height="40%"><br>
+<img src="https://github.com/kateesutt/practicum-nycdot/blob/main/images/weekly_T.png"><br>
 
 The ridership by day of the week, 2018
 
 Surprisingly, the peak of the ridership does not appears during weekends.The ridership trend by day of the week varies between different months. 
 
-<img src="https://github.com/kateesutt/practicum-nycdot/blob/main/images/monthly_T2.png" height="40%"><br>
+<img src="https://github.com/kateesutt/practicum-nycdot/blob/main/images/monthly_T2.png"><br>
 
 The ridership by month, 2018
 
@@ -60,6 +60,6 @@ No obvious trends/patterns
 
 The weather and temperature in July is most suitable for cycling. Therefore we focus on ridership in July and see the biking trend within the month.
 
-<img src="https://github.com/kateesutt/practicum-nycdot/blob/main/images/trendInJuly.png" height="40%"><br>
+<img src="https://github.com/kateesutt/practicum-nycdot/blob/main/images/trendInJuly.png"><br>
 
 There is clearly a daily periodicity
