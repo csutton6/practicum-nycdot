@@ -19,7 +19,7 @@ Figure 2. Tracks in March 25th, 2018.
 
 The first type of data could be cleaned by using clip. We clip the trip line strings within the NYC boundary. For the second type, we at first buffered the NYC boundary, then do the clip, and we also find out the points which intersect with the buffered boundary. To illustrate, we need to buffer the NYC boundary because some of tracks are close to shorelines. If the shape file of boundary is not buffered, these tracks will not be included. Then we select out the linestrings which intersect with the buffered boundary. 
 
-#### The third type is more complicated. 
+#### The third type is more complicated. <br>
 The trips is inside NYC, however, when using mapview to visualize the basemap, we find that these tracks are not aligned with existing roads. 
 
 <img src="https://github.com/kateesutt/practicum-nycdot/blob/main/images/Type3_0705_1.png" width="80%" height="40%">
@@ -34,6 +34,32 @@ Even when we use more fine-grained boundary, like shorlines of NYC to clip the d
 
 <img src="https://github.com/kateesutt/practicum-nycdot/blob/main/images/Type3_0705_3.png" width="80%" height="40%"><br>
 #### QUESTION: how to clean wrong tracks fall within the NYC boundary?
-<br><br>
+<br>
 ### Part 2 Spatial and Temporal Visualizations
+#### Ridership Trend in 2018
 
+<img src="https://github.com/kateesutt/practicum-nycdot/blob/main/images/hourly_T.png" width="80%" height="40%"><br>
+
+The ridership by 24-hours, 2018
+
+As you can see from the figure above, the trend within a day, 24 hours, remains similar for all 10 months. The morning peak appreas around 12:00 pm and the evening peak appears around 9:00 pm. Ridership decrease in midnight and early morning, the lowest ridership appears in 7:30 am.
+
+<img src="https://github.com/kateesutt/practicum-nycdot/blob/main/images/weekly_T.png" width="80%" height="40%"><br>
+
+The ridership by day of the week, 2018
+
+Surprisingly, the peak of the ridership does not appears during weekends.The ridership trend by day of the week varies between different months. 
+
+<img src="https://github.com/kateesutt/practicum-nycdot/blob/main/images/monthly_T2.png" height="40%"><br>
+
+The ridership by month, 2018
+
+No obvious trends/patterns
+
+#### Ridership Trend in July, 2018
+
+The weather and temperature in July is most suitable for cycling. Therefore we focus on ridership in July and see the biking trend within the month.
+
+<img src="https://github.com/kateesutt/practicum-nycdot/blob/main/images/trendInJuly.png" height="40%"><br>
+
+There is clearly a daily periodicity
