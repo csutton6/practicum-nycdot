@@ -7,4 +7,4 @@ Group Member: Kate Sutton, Jiaxuan Lyu, Xintian Stella Li
 
 ## <a href="https://github.com/kateesutt/practicum-nycdot/blob/main/projectManagement/ProjectManagementPlan.md">Project Management Plan</a>
 
-## Data wrangling / Exploratory analysis
+## <a href ="https://github.com/kateesutt/practicum-nycdot/blob/main/ExploratoryAnalysis.md">Data wrangling / Exploratory analysis</a>
