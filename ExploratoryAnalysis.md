@@ -21,11 +21,17 @@ The first type of data could be cleaned by using clip. We clip the trip line str
 
 #### The third type is more complicated. 
 The trips is inside NYC, however, when using mapview to visualize the basemap, we find that these tracks are not aligned with existing roads. 
+
 <img src="https://github.com/kateesutt/practicum-nycdot/blob/main/images/Type3_0705_1.png" width="80%" height="40%">
+
 Figure 3. July 5th, 2018.
+
 When we zoom in, we found a lot of similar issues. This is a snapshot of July, 5th.
+
 <img src="https://github.com/kateesutt/practicum-nycdot/blob/main/images/Type3_0705_2.png" width="80%" height="40%">
+
 Even when we use more fine-grained boundary, like shorlines of NYC to clip the data, it is still hard for R to tell whether a specific track is valid.
+
 <img src="https://github.com/kateesutt/practicum-nycdot/blob/main/images/Type3_0705_3.png" width="80%" height="40%">
 ### Spatial and Temporal Visualizations
 
