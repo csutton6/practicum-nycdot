@@ -7,12 +7,12 @@
 
 There are three types of data that needed to be clean. 
 
-The first type is that the tracks are outside of New York City, and they are not connect to the NYC. Like Figure 1, which is March 5th, there are tracks in Montreal.
+The first type is that the tracks are outside of New York City, and they are not connect to the NYC. Like Figure 1, which is March 5th, there are tracks in Montreal.<br>
 <img src="https://github.com/kateesutt/practicum-nycdot/blob/main/images/type1_March5th.png" width="80%" height="40%">
 
 Figure 1. Tracks in March 5th, 2018.
 
-The other type is that the tracks are outside of New York City, and they are connected to the NYC. Like Figure 2, the tracks fly outside of USA.
+The other type is that the tracks are outside of New York City, and they are connected to the NYC. Like Figure 2, the tracks fly outside of USA.<br>
 <img src="https://github.com/kateesutt/practicum-nycdot/blob/main/images/type2_March25th.png" width="80%" height="40%">
 
 Figure 2. Tracks in March 25th, 2018.
@@ -26,12 +26,13 @@ The trips is inside NYC, however, when using mapview to visualize the basemap, w
 
 Figure 3. July 5th, 2018.
 
-When we zoom in, we found a lot of similar issues. This is a snapshot of July, 5th.
+When we zoom in, we found a lot of similar issues. This is a snapshot of July, 5th.<br>
 
-<img src="https://github.com/kateesutt/practicum-nycdot/blob/main/images/Type3_0705_2.png" width="80%" height="40%">
+<img src="https://github.com/kateesutt/practicum-nycdot/blob/main/images/Type3_0705_2.png" width="80%" height="40%"><br>
 
-Even when we use more fine-grained boundary, like shorlines of NYC to clip the data, it is still hard for R to tell whether a specific track is valid.
+Even when we use more fine-grained boundary, like shorlines of NYC to clip the data, it is still hard for R to tell whether a specific track is valid.<br>
 
-<img src="https://github.com/kateesutt/practicum-nycdot/blob/main/images/Type3_0705_3.png" width="80%" height="40%">
+<img src="https://github.com/kateesutt/practicum-nycdot/blob/main/images/Type3_0705_3.png" width="80%" height="40%"><br>
+
 ### Spatial and Temporal Visualizations
 
