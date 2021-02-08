@@ -3,7 +3,7 @@
 
 ## Trip Data
 
-### Data Cleaning
+### Part 1 Data Cleaning
 
 There are three types of data that needed to be clean. 
 
@@ -33,6 +33,7 @@ When we zoom in, we found a lot of similar issues. This is a snapshot of July, 5
 Even when we use more fine-grained boundary, like shorlines of NYC to clip the data, it is still hard for R to tell whether a specific track is valid.<br>
 
 <img src="https://github.com/kateesutt/practicum-nycdot/blob/main/images/Type3_0705_3.png" width="80%" height="40%"><br>
-
-### Spatial and Temporal Visualizations
+#### QUESTION: how to clean wrong tracks fall within the NYC boundary?
+<br><br>
+### Part 2 Spatial and Temporal Visualizations
 
