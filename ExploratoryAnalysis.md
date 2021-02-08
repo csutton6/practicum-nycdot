@@ -25,5 +25,6 @@ The trips is inside NYC, however, when using mapview to visualize the basemap, w
 Figure 3. July 5th, 2018.
 When we zoom in, we found a lot of similar issues. This is a snapshot of July, 5th.
 <img src="https://github.com/kateesutt/practicum-nycdot/blob/main/images/Type3_0705_2.png" width="80%" height="40%">
+<img src="https://github.com/kateesutt/practicum-nycdot/blob/main/images/Type3_0705_3.png" width="80%" height="40%">
 ### Spatial and Temporal Visualizations
 
