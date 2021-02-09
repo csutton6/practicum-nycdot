@@ -17,15 +17,15 @@ library(RPostgreSQL)
 ```
 
 ```{r set up 2}
-box_auth(client_id = "nnlfdm85tbwa6vb5tgauczwed3rciavx", 
-         client_secret = "S8B3zjkOm7xipOb0JZjgX5gu1i9tnPfo")
+#box_auth(client_id = "nnlfdm85tbwa6vb5tgauczwed3rciavx", 
+#        client_secret = "S8B3zjkOm7xipOb0JZjgX5gu1i9tnPfo")
 
 ```
 
 ```{r echo=FALSE}
-box_getwd()
-box_ls()
-box_setwd(130657584748)
+#box_getwd()
+#box_ls()
+#box_setwd(130657584748)
 # dat <- box_read(771482435266)
 ```
 
@@ -40,18 +40,144 @@ Note that the `echo = FALSE` parameter was added to the code chunk to prevent pr
 library(tidyverse)
 library(sf)
 library(lubridate)
+library(RSocrata)
 ```
 
 #Used 2018 ride data in April
 
-```{r loaddata}
-rideApr <- st_read("E:/NYCDOT/RideInsights_trim/ride2018Apr/ride2018Apr_sf.shp")
+```{r loaddata, echo=FALSE, warning=FALSE}
+#for Xintian: "E:/NYCDOT/RideInsights_trim/ride2018Apr/ride2018Apr_sf.shp"
+
+setwd('C:/Users/katee/Box Sync/Practicum/shp/')
+rideApr <- st_read("ride2018Apr/ride2018Apr_sf.shp")
 
 #add time
 rideApr <- rideApr %>%
   mutate(time = ymd_hms(rcrd_tm)) %>%
   mutate(rhour = hour(time)) %>%
   mutate(days = substr(rdate, 9, 10))
+
+
+bikelane_17d<- st_read('bikelane_17d.shp')
+bikelane_18d<- st_read('bikelane_18d.shp')
+bikelane_19d<- st_read('bikelane_19d.shp')
+bikelane_20d<- st_read('bikelane_20d.shp')
+
+boroughs<- st_read('https://data.cityofnewyork.us/resource/7t3b-ywvw.geojson')
+parks<- st_read('for_basemap/geo_export_8469ffba-1951-4e52-916c-c9c4dfa54c18.shp')
+open<- st_read('for_basemap/OPEN_SPACE_NO_PARK.shp')
+
+big_parks<-subset(parks, parks$acres>30)
+big_open<- subset(open, open$SHAPE_AREA>1000000)
+
+lane2_17d<- bikelane_17d%>%
+  as.data.frame()%>%
+  select(Street, LBoro, SegmentID, SHAPE_Leng, BikeLane)
+
+lane2_18d<- bikelane_18d%>%
+  as.data.frame()%>%
+  select(Street, LBoro, SegmentID, SHAPE_Leng, BikeLane)
+
+lane2_19d<- bikelane_19d%>%
+  as.data.frame()%>%
+  select(Street, LBoro, SegmentID, SHAPE_Leng, BikeLane)
+
+lane2_20d<- bikelane_20d%>%
+  as.data.frame()%>%
+  select(Street, LBoro, SegmentID, SHAPE_Leng, BikeLane)
+
+# adding descriptions of the BikeLane numbers
+lane2_20d$LaneType <- 'Combination'
+lane2_20d$LaneType[lane2_20d$BikeLane=='1']<- 'Protected Lane'
+lane2_20d$LaneType[lane2_20d$BikeLane=='2']<- 'Unprotected Lane'
+lane2_20d$LaneType[lane2_20d$BikeLane=='3']<- 'Sharrow'
+
+lane2_19d$LaneType <- 'Combination'
+lane2_19d$LaneType[lane2_19d$BikeLane=='1']<- 'Protected Lane'
+lane2_19d$LaneType[lane2_19d$BikeLane=='2']<- 'Unprotected Lane'
+lane2_19d$LaneType[lane2_19d$BikeLane=='3']<- 'Sharrow'
+
+lane2_18d$LaneType <- 'Combination'
+lane2_18d$LaneType[lane2_18d$BikeLane=='1']<- 'Protected Lane'
+lane2_18d$LaneType[lane2_18d$BikeLane=='2']<- 'Unprotected Lane'
+lane2_18d$LaneType[lane2_18d$BikeLane=='3']<- 'Sharrow'
+
+lane2_17d$LaneType <- 'Combination'
+lane2_17d$LaneType[lane2_17d$BikeLane=='1']<- 'Protected Lane'
+lane2_17d$LaneType[lane2_17d$BikeLane=='2']<- 'Unprotected Lane'
+lane2_17d$LaneType[lane2_17d$BikeLane=='3']<- 'Sharrow'
+
+# add boro name
+lane2_17d$Borough <- 'Manhattan'
+lane2_17d$Borough[lane2_17d$LBoro=='2']<- 'Brooklyn'
+lane2_17d$Borough[lane2_17d$LBoro=='3']<- 'Bronx'
+lane2_17d$Borough[lane2_17d$LBoro=='4']<- 'Staten Island'
+lane2_17d$Borough[lane2_17d$LBoro=='5']<- 'Queens'
+
+lane2_18d$Borough <- 'Manhattan'
+lane2_18d$Borough[lane2_18d$LBoro=='2']<- 'Brooklyn'
+lane2_18d$Borough[lane2_18d$LBoro=='3']<- 'Bronx'
+lane2_18d$Borough[lane2_18d$LBoro=='4']<- 'Staten Island'
+lane2_18d$Borough[lane2_18d$LBoro=='5']<- 'Queens'
+
+lane2_19d$Borough <- 'Manhattan'
+lane2_19d$Borough[lane2_19d$LBoro=='2']<- 'Brooklyn'
+lane2_19d$Borough[lane2_19d$LBoro=='3']<- 'Bronx'
+lane2_19d$Borough[lane2_19d$LBoro=='4']<- 'Staten Island'
+lane2_19d$Borough[lane2_19d$LBoro=='5']<- 'Queens'
+
+lane2_20d$Borough <- 'Manhattan'
+lane2_20d$Borough[lane2_20d$LBoro=='2']<- 'Brooklyn'
+lane2_20d$Borough[lane2_20d$LBoro=='3']<- 'Bronx'
+lane2_20d$Borough[lane2_20d$LBoro=='4']<- 'Staten Island'
+lane2_20d$Borough[lane2_20d$LBoro=='5']<- 'Queens'
+
+
+
+diff_1<- anti_join(lane2_17d, lane2_18d)
+diff_2<- anti_join(lane2_18d, lane2_19d)
+diff_3<- anti_join(lane2_19d, lane2_20d)
+
+group_20_boro<-lane2_20d%>%
+  group_by(Borough, LaneType)%>%
+  summarize(Count = n(), 
+            Length=sum(SHAPE_Leng))%>%
+  arrange(desc(Length))
+
+new_18_group<- diff_1%>%
+  group_by(Street)%>%
+  summarize(Count = n(), 
+            Length=sum(SHAPE_Leng), 
+            LaneType=first(LaneType),
+            Borough=first(Borough))%>%
+  arrange(desc(Length))
+
+new_19_group<- diff_2%>%
+  group_by(Street)%>%
+  summarize(Count = n(), 
+            Length=sum(SHAPE_Leng), 
+            LaneType=first(LaneType),
+            Borough=first(Borough))%>%
+  arrange(desc(Length))
+
+new_20_group<- diff_3%>%
+  group_by(Street)%>%
+  summarize(Count = n(), 
+            Length=sum(SHAPE_Leng), 
+            LaneType=first(LaneType),
+            Borough=first(Borough))%>%
+  arrange(desc(Length))
+
+
+new_18_sf<-inner_join(bikelane_18d, diff_1, by=c('Street','SegmentID'))
+new_19_sf<-inner_join(bikelane_19d, diff_2, by=c('Street','SegmentID'))
+new_20_sf<-inner_join(bikelane_20d, diff_3, by=c('Street','SegmentID'))
+
+protected_20d<- subset(bikelane_20d, BikeLane=='1')
+unprotected_20d<- subset(bikelane_20d, BikeLane=='2')
+sharrow_20d<- subset(bikelane_20d, BikeLane=='3')
+
+
 ```
 
 
@@ -86,4 +212,57 @@ ggplot(rideApr %>%
          group_by(rhour) %>%
          tally())+
   geom_line(aes(x = rhour, y = n))
+```
+
+# Bike Lanes Over Time 2018-2021
+### darker is newer
+```{r vis3}
+ggplot()+
+  geom_sf(data=boroughs, color='white', fill='white')+
+  geom_sf(data=big_parks, color='#c4d9ab', fill='#d5e8be')+
+  geom_sf(data=big_open,color='#c4d9ab', fill='#d5e8be')+
+  geom_sf(data=bikelane_20d, color='blue')+
+  geom_sf(data=bikelane_19d, color = 'red')+
+  geom_sf(data=bikelane_18d, color='#1cd9ff')+
+  geom_sf(data=bikelane_17d, color = 'azure4')
+```
+
+# Bike Lanes by Level of Protection 
+### darker is more protected
+```{r vis4}
+ggplot()+
+  geom_sf(data=boroughs, color='white', fill='white')+
+  geom_sf(data=big_parks, color='#c4d9ab', fill='#d5e8be')+
+  geom_sf(data=big_open,color='#c4d9ab', fill='#d5e8be')+
+  geom_sf(data=protected_20d, color='#6a51a3')+
+  geom_sf(data=unprotected_20d, color='#9e9ac8')+
+  geom_sf(data=sharrow_20d, color='#d3d1e8')
+```
+
+
+# Bike Lane Plots
+```{r vis5}
+ggplot(data=group_20_boro)+
+  geom_col(aes(x=Borough, y=Length))+
+  labs(title='NYC Bike Lanes by Borough - 2021')
+
+ggplot(data=group_20_boro)+
+  geom_col(aes(x=LaneType, y=Length))+
+  labs(title='NYC Bike Lanes by Type - 2021')
+
+ggplot(data=group_20_boro)+
+  geom_col(aes(x=Borough, y=Length, fill=LaneType), position='dodge')+
+  labs(title='NYC Bike Lanes by Borough and Type - 2021')
+
+ggplot(data=new_18_group)+
+  geom_col(aes(x=Borough, y=Length, fill=LaneType), position='dodge')+
+  labs(title='Bike Lanes Built in 2018')
+
+ggplot(data=new_19_group)+
+  geom_col(aes(x=Borough, y=Length, fill=LaneType), position='dodge')+
+  labs(title='Bike Lanes Built in 2019')
+
+ggplot(data=new_20_group)+
+  geom_col(aes(x=Borough, y=Length, fill=LaneType), position='dodge')+
+  labs(title='Bike Lanes Built in 2020')
 ```
