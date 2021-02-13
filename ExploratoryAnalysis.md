@@ -1,8 +1,6 @@
 # Data wrangling / Exploratory analysis
 
 
-## Trip Data
-
 ### Part 1 Data Cleaning
 
 There are three types of data that needed to be clean. 
@@ -33,9 +31,13 @@ When we zoom in, we found a lot of similar issues. This is a snapshot of July, 5
 Even when we use more fine-grained boundary, like shorlines of NYC to clip the data, it is still hard for R to tell whether a specific track is valid.<br>
 
 <img src="https://github.com/kateesutt/practicum-nycdot/blob/main/images/Type3_0705_3.png" width="80%" height="40%"><br>
-#### QUESTION: how to clean wrong tracks fall within the NYC boundary?
-<br>
+
+
+
+
 ### Part 2 Spatial and Temporal Visualizations
+
+
 #### Ridership Trend in 2018
 
 <img src="https://github.com/kateesutt/practicum-nycdot/blob/main/images/hourly_T.png" ><br>
@@ -63,3 +65,21 @@ The weather and temperature in July is most suitable for cycling. Therefore we f
 <img src="https://github.com/kateesutt/practicum-nycdot/blob/main/images/trendInJuly.png"><br>
 
 There is clearly a daily periodicity
+
+
+#### Ridership Trend on roads in March, year 2018 and year 2019
+
+Due to the size of data, we focus on Manhattan in this part of visualization. 
+
+To further clean up problematic trips within the selected boundary, we consider changing linestring of trip data into points. Later, we select only the points which are falling inside the routes. The points are then grouped by their unique index. Additionally, in order to make them overlap better, we make a 15 feet buffer on route data by using ArcGIS.
+However, during this workflow, we are changing linestring to points, a progress that add much more data on original dataset. Therefore, we decide to select part of original data based on their temporal characteristics.
+
+We are comparing trips in March, 2018 and trips in March, 2019. The following graphs are daily trends and hourly trends in March for each year.
+
+<img src="https://github.com/kateesutt/practicum-nycdot/blob/main/images/hourlytrend_1819.jpeg"><br>
+
+<img src="https://github.com/kateesutt/practicum-nycdot/blob/main/images/dailytrend_1819.jpeg"> <br>
+
+From the figures, we could see that, overall, there are much more trips in March 2019. There is no clear daily trend. However, in both years, the number of trips peak at similar days. Hence, March 10th and March 20th are selected as days which have smaller number of trips and larger number of trips.
+
+Moreover, there is a similar hourly trend that the number of trips peaks at 23pm and minimizes at 8am. Because there it not enough data to do clear comparison at 8am, we only use 23pm.
