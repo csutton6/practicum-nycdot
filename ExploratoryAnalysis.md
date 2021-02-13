@@ -92,4 +92,11 @@ After transformation, only the points which locate inside the boundary of routes
 
 Here is the map of trips in March 10th, year 2018 and year 2019.
 
-<img src="https://github.com/kateesutt/practicum-nycdot/blob/main/images/march10_1819.png">
+<img src="https://github.com/kateesutt/practicum-nycdot/blob/main/images/march10_1819.png"><br>
+
+Here is the map of trips in March 20th, year 2018 and year 2019.
+
+<img src="https://github.com/kateesutt/practicum-nycdot/blob/main/images/march20_1819.png"><br>
+
+Moreover, the map of trips at 23pm in March is also made.
+<img src="https://github.com/kateesutt/practicum-nycdot/blob/main/images/march23pm_1819.png">
