@@ -83,3 +83,13 @@ We are comparing trips in March, 2018 and trips in March, 2019. The following gr
 From the figures, we could see that, overall, there are much more trips in March 2019. There is no clear daily trend. However, in both years, the number of trips peak at similar days. Hence, March 10th and March 20th are selected as days which have smaller number of trips and larger number of trips.
 
 Moreover, there is a similar hourly trend that the number of trips peaks at 23pm and minimizes at 8am. Because there it not enough data to do clear comparison at 8am, we only use 23pm.
+
+In the process of changing linestring to points, aiming to keep data’s attributes, we use ArcGIS to help us do the transformation. We use the tool, Generate Pointes Along Lines, and create the points as 5%. In other words, for one string of trip data, there will be 100%/5% = 20 number of points.
+
+<img src="https://github.com/kateesutt/practicum-nycdot/blob/main/images/geoprocess_arcgis.png"><br>
+
+After transformation, only the points which locate inside the boundary of routes are kept. Later, for each route, the points are grouped by their identical index, and we count the number of trips in one route.
+
+Here is the map of trips in March 10th, year 2018 and year 2019.
+
+<img src="https://github.com/kateesutt/practicum-nycdot/blob/main/images/march10_1819.png">
