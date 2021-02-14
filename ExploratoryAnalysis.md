@@ -100,3 +100,10 @@ Here is the map of trips in March 20th, year 2018 and year 2019.
 
 Moreover, the map of trips at 23pm in March is also made.
 <img src="https://github.com/kateesutt/practicum-nycdot/blob/main/images/march23pm_1819.png">
+
+### OUR QUESTIONS
+  - 1. Should we train our model on one Borough (Manhattan has the most well-built bikelane systems and the most trips) and then test our model on other boroughs?
+  However Manhattan don't have many new bikelanes in 2018, we are not sure whether that will have an impact on the accuracy of our model.
+  - 2. When comparing March 2018 and March 2019, 2019 has many more trips. Would that be a problem for our model?
+  - 3. Methods to count trips on each roads. Are we in the right direction?
+
