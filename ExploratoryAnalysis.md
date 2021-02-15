@@ -94,6 +94,14 @@ Here is the map of trips in March 10th, year 2018 and year 2019.
 
 <img src="https://github.com/kateesutt/practicum-nycdot/blob/main/images/march10_1819.png"><br>
 
+Also, here is the table that describes the additional trips of added bike infrastructures:
+| Street      | Count (2018) | Count (2019) |
+| ----------- | ----------- |-------------|
+| 	5 AVENUE  | 0           | 2           |
+| BIKE PATH   | 0           | 1           |
+| BROADWAY    | 0           | 7           |
+|HUDSON RIVER GREENWAY|0| 1|
+
 Here is the map of trips in March 20th, year 2018 and year 2019.
 
 <img src="https://github.com/kateesutt/practicum-nycdot/blob/main/images/march20_1819.png"><br>
