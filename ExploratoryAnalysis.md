@@ -167,6 +167,7 @@ Here is the bike ridership on March 20th, Brooklyn
     
     
   2. When comparing March 2018 and March 2019, 2019 has many more trips. Would that be a problem for our model?<br>
+    - Should we predict ridership for all streets or only the streets with a new bike lane? If the latter, how will we control for the overall increase in ridership over time? <br>
     - Also in 2020, partly because of the covid impact, people tend to use bicycles more. Will that affect the generalizablity of our model?
   
   
