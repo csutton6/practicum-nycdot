@@ -27,9 +27,9 @@ Indeed, Manhattan hosts the largest share of protected bike lanes, while in Broo
 
 Our trip data begins in 2018, so it is important to identify the bike lanes that have been added to the network since 2018. Only 15% of the current bike lane mileage was added during the study period. The majority of this was added during 2020, which may pose a challenge to generalizability (due to changing ridership patterns during COVID-19) or the volume of trip data available after the infrastructure investment. 
 
-![lanes over time](images/newlanes_studyperiod.png)
+![lanes over time](images/map_newlane_yearType.png)
 
-Looking at the map for each year more closely reveals that 2018 and 2019 saw a limited number of corridors with new bike lanes. 
+Looking at the map for each year more closely reveals that 2018 and 2019 saw a limited number of corridors where significant stretches of new bike lane were added, particularly when one excludes sharrows, which offer minimal protection to cyclists. 
 
 ![2018 new map](images/2018_newbyType.png)
 ![2019 new map](images/2019_newbyType.png)
