@@ -9,11 +9,13 @@ There are three main categories of bike lanes in the data, which we have termed 
 |![protected](images/1stave_protected.jpg)|![unprotected](images/melrose_striped.PNG)|![sharrow](images/sharrow.PNG)|
 | bike lane is separated from vehicle traffic by parked cars | bike lane is painted next to the vehicle lane | sharrow symbol instructs cars to share vehicle lane with bikes |
 
-Unprotected bike lanes are the most common type found in New York City, while the borough of the Bronx has the largest bike lane mileage of any borough. 
+Unprotected bike lanes are the most common type found in New York City, while the borough of the Bronx has the largest bike lane mileage of any borough.
+
 ![lanes plot](images/plot_lanes_bytype.png)  
 ![boro plot](images/plot_lanes_byBoro.png)
 
 From glancing at a map of these lanes across the city, we get a sense that the lane types are not evenly distributed throughout the 5 boroughs of New York City. 
+
 ![facet lane type](images/facet_lanetype.png)
 
 
