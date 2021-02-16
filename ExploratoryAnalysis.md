@@ -36,7 +36,7 @@ Looking at the map for each year more closely reveals that 2018 and 2019 saw a l
 ![2020 new map](images/2020_newbyType.png)
 
 
-An alternative method that we used to account for bikeline differences by using ArcGIS: Symmetrical Difference
+An alternative method that we used to account for new bike lanes in 2018 by using ArcGIS: Symmetrical Difference
 <img src="https://github.com/kateesutt/practicum-nycdot/blob/main/images/1718Diff_bikeline.png">
 <br>
 
