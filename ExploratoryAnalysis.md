@@ -36,6 +36,12 @@ Looking at the map for each year more closely reveals that 2018 and 2019 saw a l
 ![2020 new map](images/2020_newbyType.png)
 
 
+An alternative method that we used to account for bikeline differences by using ArcGIS: Symmetrical Difference
+<img src="https://github.com/kateesutt/practicum-nycdot/blob/main/images/1718Diff_bikeline.png">
+<br>
+
+
+
 ### Trip Data Cleaning
 
 There are three types of data that needed to be clean. 
@@ -161,7 +167,6 @@ Here is the bike ridership on March 20th, Brooklyn
     
     
   2. When comparing March 2018 and March 2019, 2019 has many more trips. Would that be a problem for our model?<br>
-    - Should we predict the ridership for all streets or only those streets with new bike lanes? If the latter, how will we control for generalized increase in ridership over time?
     - Also in 2020, partly because of the covid impact, people tend to use bicycles more. Will that affect the generalizablity of our model?
   
   
