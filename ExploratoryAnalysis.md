@@ -58,6 +58,7 @@ The ridership by month, 2018
 
 No obvious trends/patterns
 
+
 #### Ridership Trend in July, 2018
 
 The weather and temperature in July is most suitable for cycling. Therefore we focus on ridership in July and see the biking trend within the month.
@@ -66,7 +67,7 @@ The weather and temperature in July is most suitable for cycling. Therefore we f
 
 There is clearly a daily periodicity
 
-
+### Manhattan 
 #### Ridership Trend on roads in March, year 2018 and year 2019
 
 Due to the size of data, we focus on Manhattan in this part of visualization. 
@@ -109,15 +110,31 @@ Here is the map of trips in March 20th, year 2018 and year 2019.
 Moreover, the map of trips at 23pm in March is also made.
 <img src="https://github.com/kateesutt/practicum-nycdot/blob/main/images/march23pm_1819.png">
 
+### Brooklyn
+To compare with the patterns in Manhattan, we also created the ridership analysis on the same days in Brooklyn
+
+Here is the bike ridership on March 10th, Brooklyn
+<img src = "https://github.com/kateesutt/practicum-nycdot/blob/main/images/Brooklyn10th.png">
+
+Here is the bike ridership on March 20th, Brooklyn
+<img src = "https://github.com/kateesutt/practicum-nycdot/blob/main/images/Brooklyn20th.png">
+
+
 ### OUR QUESTIONS
-  1. **Question about big datasets**: Should we train our model on one Borough (Manhattan has the most well-built bikelane systems and the most trips) and then test our model on other boroughs?
-    - However Manhattan don't have many new bikelanes in 2018 (Because it was already well-built). If we want to model the impact of new infra on the bike ridership, we are not sure whether that will have an impact on the accuracy of our model.
+  1. **Question about big datasets**: Should we train our model on one Borough (Manhattan has the most well-built bikelane systems and the most trips) and then test our model on other boroughs?<br>
+    -- However Manhattan don't have many new bikelanes in 2018 (Because it was already well-built). If we want to model the impact of new infra on the bike ridership, we are not sure whether that will have an impact on the accuracy of our model.
+    
+    
   2. When comparing March 2018 and March 2019, 2019 has many more trips. Would that be a problem for our model?
-  3. Methods to count trips on each roads. Are we in the right direction?
-    - Our method: create a buffer of each road segment (15 feet) --> linestring to point --> clip points within a buffer of the road --> spatial join the point to road segment --> conver points back to bike trips --> calculate bike trips on each road (group by road name/id)
-    - Question 1: When doing spatial join, points are sometimes intersected with multiple roads, which will create multiple records in the data set, then create several trips because some points are duplicated. Will that matter?
-    - Question 2: Is 15 feet an appropriate buffer range?
-    - Question 3: When 
+  
+  
+  3. Methods to count trips on each roads. Are we in the right direction? <br>
+    - Our method: create a buffer of each road segment (15 feet) --> linestring to point --> clip points within a buffer of the road --> spatial join the point to road segment --> conver points back to bike trips --> calculate bike trips on each road (group by road name/id)<br>
+    - Question 1: When doing spatial join, points are sometimes intersected with multiple roads, which will create multiple records in the data set, then create several trips because some points are duplicated. Will that matter?<br>
+    - Question 2: Is 15 feet an appropriate buffer range?<br>
+    - Question 3: When turn line into point, which point placement method should we choose? (by distance or by percentage?)
+    
+    
    4. **Question about big datasets**: Even with subset of data, R became extremely slow when doing visualization or doing spatial operations. Are there any tricks for dealing with big dataset?
   
 
