@@ -1,7 +1,12 @@
 # Data wrangling / Exploratory analysis
 
+### Bike Lane Analysis
 
-### Part 1 Data Cleaning
+There are three main categories of bike lanes in the data, which we have termed Protected, Unprotected, and Sharrow. A fourth category is comprised of those road segments with a combination of one of the other three categories. 
+
+
+
+### Trip Data Cleaning
 
 There are three types of data that needed to be clean. 
 
