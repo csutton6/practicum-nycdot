@@ -2,7 +2,7 @@
 
 ### Bike Lane Analysis
 
-There are three main categories of bike lanes in the data, which we have termed Protected, Unprotected, and Sharrow. A fourth category is comprised of those road segments with a combination of one of the other three categories. 
+There are three main categories of bike lanes in the data, which we have termed Protected, Unprotected, and Sharrow. A fourth category, Combination, is comprised of those road segments with a combination of the other three bike lane categories. 
 
 | Protected | Unprotected | Sharrow |
 |-----------|-------------|---------|
