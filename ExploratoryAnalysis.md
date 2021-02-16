@@ -160,7 +160,8 @@ Here is the bike ridership on March 20th, Brooklyn
     -- However Manhattan don't have many new bikelanes in 2018 (Because it was already well-built). If we want to model the impact of new infra on the bike ridership, we are not sure whether that will have an impact on the accuracy of our model.
     
     
-  2. When comparing March 2018 and March 2019, 2019 has many more trips. Would that be a problem for our model?
+  2. When comparing March 2018 and March 2019, 2019 has many more trips. Would that be a problem for our model?<br>
+    - Also in 2020, partly because of the covid impact, people tend to use bicycles more. Will that affect the generalizablity of our model?
   
   
   3. Methods to count trips on each roads. Are we in the right direction? <br>
@@ -171,5 +172,7 @@ Here is the bike ridership on March 20th, Brooklyn
     
     
    4. **Question about big datasets**: Even with subset of data, R became extremely slow when doing visualization or doing spatial operations. Are there any tricks for dealing with big dataset?
+   
+   
   
 
