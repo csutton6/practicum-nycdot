@@ -6,7 +6,7 @@ There are three main categories of bike lanes in the data, which we have termed 
 
 | Protected | Unprotected | Sharrow |
 |-----------|-------------|---------|
-|![protected](images/protected2.jfif)|![unprotected](images/melrose_striped.PNG)|![sharrow](images/sharrow.PNG)
+|![protected](images/1stave_protected.jpeg)|![unprotected](images/melrose_striped.PNG)|![sharrow](images/sharrow.PNG)
 
 
 ### Trip Data Cleaning
