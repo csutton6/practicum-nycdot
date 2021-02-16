@@ -110,8 +110,14 @@ Moreover, the map of trips at 23pm in March is also made.
 <img src="https://github.com/kateesutt/practicum-nycdot/blob/main/images/march23pm_1819.png">
 
 ### OUR QUESTIONS
-  - 1. Should we train our model on one Borough (Manhattan has the most well-built bikelane systems and the most trips) and then test our model on other boroughs?
-  However Manhattan don't have many new bikelanes in 2018, we are not sure whether that will have an impact on the accuracy of our model.
-  - 2. When comparing March 2018 and March 2019, 2019 has many more trips. Would that be a problem for our model?
-  - 3. Methods to count trips on each roads. Are we in the right direction?
+  1. **Question about big datasets**: Should we train our model on one Borough (Manhattan has the most well-built bikelane systems and the most trips) and then test our model on other boroughs?
+    - However Manhattan don't have many new bikelanes in 2018 (Because it was already well-built). If we want to model the impact of new infra on the bike ridership, we are not sure whether that will have an impact on the accuracy of our model.
+  2. When comparing March 2018 and March 2019, 2019 has many more trips. Would that be a problem for our model?
+  3. Methods to count trips on each roads. Are we in the right direction?
+    - Our method: create a buffer of each road segment (15 feet) --> linestring to point --> clip points within a buffer of the road --> spatial join the point to road segment --> conver points back to bike trips --> calculate bike trips on each road (group by road name/id)
+    - Question 1: When doing spatial join, points are sometimes intersected with multiple roads, which will create multiple records in the data set, then create several trips because some points are duplicated. Will that matter?
+    - Question 2: Is 15 feet an appropriate buffer range?
+    - Question 3: When 
+   4. **Question about big datasets**: Even with subset of data, R became extremely slow when doing visualization or doing spatial operations. Are there any tricks for dealing with big dataset?
+  
 
