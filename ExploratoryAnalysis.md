@@ -7,7 +7,7 @@ There are three main categories of bike lanes in the data, which we have termed 
 | Protected | Unprotected | Sharrow |
 |-----------|-------------|---------|
 |![protected](images/1stave_protected.jpg)|![unprotected](images/melrose_striped.PNG)|![sharrow](images/sharrow.PNG)|
-| bike lane is separated from vehicle traffic by parked cars | bikes have a lane painted next to the vehicle lane | bikes must share the lane with vehicles |
+| bike lane is separated from vehicle traffic by parked cars | bike lane is painted next to the vehicle lane | sharrow symbol instructs cars to share vehicle lane with bikes |
 
 
 
