@@ -4,6 +4,9 @@
 
 There are three main categories of bike lanes in the data, which we have termed Protected, Unprotected, and Sharrow. A fourth category is comprised of those road segments with a combination of one of the other three categories. 
 
+| Protected | Unprotected | Sharrow |
+|-----------|-------------|---------|
+|![protected](images/protected2.jfif)|![unprotected](images/melrose_striped.png)|![sharrow](images/sharrow.png)
 
 
 ### Trip Data Cleaning
