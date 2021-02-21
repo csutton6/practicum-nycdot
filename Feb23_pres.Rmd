@@ -2,7 +2,11 @@
 title: "Feb23_pres"
 author: "Jiaxuan Lyu, Xintian Stella Li & Kate Sutton"
 date: "2/20/2021"
-output: html_document
+output: 
+  html_document:
+    code_folding: hide
+    toc:  true
+    toc_float: true
 ---
 
 ```{r setup, include=FALSE}
