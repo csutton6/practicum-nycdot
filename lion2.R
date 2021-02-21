@@ -11,6 +11,9 @@ library(RSocrata)
 library(ggthemes)
 library(kableExtra)
 
+bikelane_17d<- st_read('bikelane_17d.shp')
+bikelane_20d<- st_read('bikelane_20d.shp')
+
 new_18 <- st_read('bikelane_1718Diff_2.shp')
 new_19 <- st_read('bikelane_1819Diff_2.shp')
 new_20 <- st_read('bikelane_1920Diff_2.shp')
@@ -47,7 +50,24 @@ new_20$LaneType[new_20$BikeLane_1=='1']<- '1: Protected Lane'
 new_20$LaneType[new_20$BikeLane_1=='2']<- '2: Unprotected Lane'
 new_20$LaneType[new_20$BikeLane_1=='3']<- '4: Sharrow'
 
+bikelane_17d$LaneType <- '3: Combination'
+bikelane_17d$LaneType[bikelane_17d$BikeLane=='1']<- '1: Protected Lane'
+bikelane_17d$LaneType[bikelane_17d$BikeLane=='2']<- '2: Unprotected Lane'
+bikelane_17d$LaneType[bikelane_17d$BikeLane=='3']<- '4: Sharrow'
+
+bikelane_20d$LaneType <- '3: Combination'
+bikelane_20d$LaneType[lane2_20d$BikeLane=='1']<- '1: Protected Lane'
+bikelane_20d$LaneType[lane2_20d$BikeLane=='2']<- '2: Unprotected Lane'
+bikelane_20d$LaneType[lane2_20d$BikeLane=='3']<- '4: Sharrow'
+
+
 #add boro name
+bikelane_17d$Borough <- 'Manhattan'
+bikelane_17d$Borough[bikelane_17d$LBoro_1=='2']<- 'Bronx'
+bikelane_17d$Borough[bikelane_17d$LBoro_1=='3']<- 'Brooklyn'
+bikelane_17d$Borough[bikelane_17d$LBoro_1=='4']<- 'Queens'
+bikelane_17d$Borough[bikelane_17d$LBoro_1=='5']<- 'Staten Island'
+
 new_18$Borough <- 'Manhattan'
 new_18$Borough[new_18$LBoro_1=='2']<- 'Bronx'
 new_18$Borough[new_18$LBoro_1=='3']<- 'Brooklyn'
@@ -67,7 +87,12 @@ new_20$Borough[new_20$LBoro_1=='4']<- 'Queens'
 new_20$Borough[new_20$LBoro_1=='5']<- 'Staten Island'
 
 
-#function for if sum of road <.25 mi, drop all segments with that road name
+#if sum of road <1000 ft, drop all segments with that road name
+lane_17d<- bikelane_17d%>%
+  group_by(Street, LaneType)%>%
+  summarize(Length=sum(SHAPE_Leng),
+            Borough=first(Borough))
+
 new_18_clean<- new_18%>%
   group_by(Street_1, LaneType)%>%
   summarize(Length=sum(SHAPE_Le_1),
@@ -85,6 +110,30 @@ new_20_clean<- new_20%>%
   summarize(Length=sum(SHAPE_Le_1),
             Borough=first(Borough))%>%
   filter(Length>1000)
+
+#names(my_data)[names(my_data) == "Sepal.Length"] <- "sepal_length"
+names(new_18_clean)[names(new_18_clean) == "Street_1"] <- "Street"
+names(new_19_clean)[names(new_19_clean) == "Street_1"] <- "Street"
+names(new_20_clean)[names(new_20_clean) == "Street_1"] <- "Street"
+
+
+lane_17d$Year<- 2017
+new_18_clean$Year<- 2018
+new_19_clean$Year<- 2019
+new_20_clean$Year<- 2020
+
+st_crs(new_18_clean)
+
+combo<- rbind(lane_17d, new_18_clean, new_19_clean, new_20_clean)
+combo_sf<-inner_join(bikelane_20d, combo, by='SegmentID')
+
+#current lanes by type
+ggplot()+
+  geom_sf(data=boroughs, color='#222222', fill='#222222')+
+  geom_sf(data=big_parks, color='#4c6350', fill='#4c6350')+
+  geom_sf(data=bikelane_20d, aes(color = LaneType), size=0.5)+
+  scale_colour_manual(values = c('#F55536','#f57f36', '#f7ac2a', '#fcd93a'))+
+  labs(title='New York City Bike Lanes by Type 2021')
 
 #new lanes by type each year
 ggplot()+

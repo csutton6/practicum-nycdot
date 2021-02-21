@@ -4,7 +4,6 @@ author: "Jiaxuan Lyu, Kate Sutton, Xintian Stella Li"
 date: "1/31/2021"
 output: rmarkdown::github_document
 ---
-## Set up the boxr api
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 # install.packages('boxr')
