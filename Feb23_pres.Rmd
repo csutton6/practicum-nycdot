@@ -521,3 +521,226 @@ ggplot(wdayTrend2018, aes(x=wday, y=n, color=as.character(month))) +
 If we view the data from the day of week, there is no clear trend about the data.
 Overall, the number of trips peak at noon and at night, and the later months tend to have more trips than earlier months. There is no clear trend how the data vary among days or days of week.
 \
+
+#### Borough Level Analysis
+
+\
+Because Manhanttan as our major study hour, we also visualize the density of trips on each roads in Manhanttan, in July 2018 and July 2019.\
+Due to the size of the dataset, we only choose July 22 pm as our analyzing time.Then, we narrow our data into Manhattan. Because the redundacy of process, the following part just show how we did the process but will not run the code. Later, the processed data will be directly imported.
+
+```{r importborLane, message=FALSE, warning=FALSE, results='hide'}
+#import borough Manhanttan
+borough <- st_read("E:/NYCDOT/Borough Boundaries/geo_export_4c045526-dcb9-4e1a-b602-59b848e20e6a.shp") %>%
+  filter(boro_name == "Manhattan") %>%
+  st_transform(st_crs(July2018))
+Manhatan_line <- st_cast(borough, "MULTILINESTRING")
+
+#import bike lane data
+bike15 <- st_read("E:/NYCDOT/nyclion_20d/lion_buffer15/lion_buffer15.shp") %>%
+  st_transform(st_crs(July2018)) %>%
+  select(Street, FeatureTyp, SegmentTyp, FaceCode, SeqNum, StreetCode, LGC1, SegmentID,
+         SHAPE_Leng, SHAPE_Area, geometry)
+
+bike15M <- bike15[borough,]
+
+```
+
+```{r importborData, message=FALSE, warning=FALSE, results='hide'}
+##===Import data===##
+#import July2018, and July2019 data
+#July2018 <- st_read("E:/NYCDOT/rideData_cleaned/July2018/July18_cleaned.shp")
+#July2019 <- st_read("E:/NYCDOT/rideData_cleaned/July2019/July19_cleaned.shp")
+
+
+#Due to the size of dataset, only select rhour==22
+#July18_22pm <- July2018 %>%
+  #filter(rhour == 22)
+#July19_22pm <- July2019 %>%
+  #filter(rhour == 22)
+
+##==select data only in Manhanttan==##
+
+#find out intersection points
+#July18_intersect <- July18_22pm[Manhatan_line,]
+#July19_intersect <- July19_22pm[Manhatan_line,]
+
+#only in Manhattan
+#July18M_22pm <- July18_22pm[borough,] %>%
+  #filter(!id %in% July18_intersect$id)
+#July19M_22pm <- July19_22pm[borough,] %>%
+  #filter(!id %in% July19_intersect$id)
+
+#check
+#mapview(July18M_22pm)
+#mapview(July19M_22pm)
+
+
+
+##==change trip data's geometry from linestring to points==#
+#save the file
+#st_write(July18M_22pm, "July18M_22pm.shp", driver = "ESRI Shapefile")
+#st_write(July19M_22pm, "July19M_22pm.shp", driver = "ESRI Shapefile")
+
+```
+\
+
+##### Visualization
+```{r pnts1819, message=FALSE, warning=FALSE, results='hide'}
+# import results after using ArcGIS (by 150m)
+pJuly18M_22pm <- st_read("E:/NYCDOT/riderpoint_shp/July/generated/July18M_22pm_pnts.shp")
+pJuly19M_22pm <- st_read("E:/NYCDOT/riderpoint_shp/July/generated/July19M_22pm_pnts.shp")
+
+
+##==Select points within the roads==##
+inrpnts_July18 <- pJuly18M_22pm[bike15M,]
+inrpnts_July19 <- pJuly19M_22pm[bike15M,]
+
+#allocate Street Name on roads
+inrpnts_July18 <- st_join(inrpnts_July18, bike15M, join = st_intersects, left = TRUE)
+inrpnts_July19 <- st_join(inrpnts_July19, bike15M, join = st_intersects, left = TRUE)
+
+##==group points inside same street as linestring==#
+#Reference:https://stackoverflow.com/questions/50908771/create-multilines-from-points-grouped-by-id-with-sf-package
+pnts2Line_18 <- inrpnts_July18 %>%
+  group_by(id, Street) %>%
+  summarise(do_union = FALSE) %>%
+  st_cast("LINESTRING")
+
+pnts2Line_19 <- inrpnts_July19 %>%
+  group_by(id, Street) %>%
+  summarise(do_union = FALSE) %>%
+  st_cast("LINESTRING")
+
+#Count number of trips on each street
+ntrips_July18 <- pnts2Line_18 %>%
+  st_drop_geometry() %>%
+  group_by(Street) %>%
+  summarise(Count = n())
+
+ntrips_July19 <- pnts2Line_19 %>%
+  st_drop_geometry() %>%
+  group_by(Street) %>%
+  summarise(Count = n())
+
+
+##==bind the trips to road table==##
+road_18 <- merge(bike15M %>% select(Street, geometry), ntrips_July18, by = ("Street"), all.x=TRUE)
+road_19 <- merge(bike15M %>% select(Street, geometry), ntrips_July19, by = ("Street"), all.x=TRUE)
+
+#add year
+road_18$year <- 2018
+road_19$year <- 2019
+
+```
+```{r pntsVis, message=FALSE, warning=FALSE}
+
+##==visualize==##
+ggplot() +
+  geom_sf(data = rbind(road_18, road_19), aes(color = Count), alpha = 0.9)+ 
+  facet_wrap(~year) +
+  scale_colour_viridis(direction = -1,
+                       discrete = FALSE, option="viridis",
+                       na.value="#D4D4D4") +
+  labs(title = "Bike Trip Counts in July 22pm") +
+  mapTheme()
+
+```
+
+\
+
+##### Trips Comparsion on Added Bike Lanes
+
+```{r newtripsonNewLane, message=FALSE, warning=FALSE, results='hide'}
+##==Find out the number of trips on new added bike lanes==##
+#import data of new bike lanes (buffer 15)
+bike18new <- st_read("E:/NYCDOT/bikeDiff/bike_1718Diff/bikelane_1718DiffBuffer.shp") %>%
+  st_transform(st_crs(July2018))
+
+#clip new bike lanes in Manhanttan
+bike18new_M <- bike18new[borough,]
+
+#assign Street Name to new bike lanes
+bike18new_M <- st_join(bike18new_M %>% select(-Street), bike15M %>%
+                       select(Street, geometry), join = st_intersects, left = TRUE)
+
+
+#Find the trip points overlap with roads
+tripsinNew18 <- pJuly18M_22pm[bike18new_M,]
+tripsinNew19 <- pJuly19M_22pm[bike18new_M,]
+
+#allocate road name on pnts
+newtrips18 <- st_join(tripsinNew18, bike18new_M %>% select(Street, geometry),
+                      join = st_intersects, left = TRUE) %>% na.omit()
+
+newtrips19 <- st_join(tripsinNew19, bike18new_M %>% select(Street, geometry),
+                      join = st_intersects, left = TRUE) %>% na.omit()
+
+
+
+#group points inside same street as linestring
+new.pnts2Line18 <- newtrips18 %>%
+  group_by(id, Street) %>%
+  summarise(do_union = FALSE) %>%
+  st_cast("LINESTRING")
+
+new.pnts2Line19 <- newtrips19 %>%
+  group_by(id, Street) %>%
+  summarise(do_union = FALSE) %>%
+  st_cast("LINESTRING")
+
+#Count
+n.new18 <- new.pnts2Line18 %>%
+  st_drop_geometry() %>%
+  group_by(Street) %>%
+  summarise(Count = n()) %>%
+  mutate(year = 2018)
+
+n.new19 <- new.pnts2Line19 %>%
+  st_drop_geometry() %>%
+  group_by(Street) %>%
+  summarise(Count = n()) %>%
+  mutate(year = 2019)
+
+
+```
+
+```{r newDiff1819}
+#Create a summarise table
+#Outer join table
+new.num <- merge(x = n.new18, y = n.new19, by = "Street", all = TRUE)
+
+#assign NA to 0
+new.num[is.na(new.num)] <- 0
+
+#Find out Diff
+new.num <- new.num %>%
+  mutate(Diff = Count.y - Count.x)
+
+```
+
+
+```{r showtable}
+new.num %>% 
+  select(Street, Diff) %>% 
+  kbl() %>%
+  kable_styling()
+
+```
+
+```{r showdiffvis}
+ggplot(data=new.num, aes(x=Street, y=Diff)) +
+  geom_bar(stat="identity") +
+  theme(
+    # Remove grid lines
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank(),
+    # Change axis line
+    axis.title.x=element_blank(),
+    axis.text.x=element_blank(),
+    axis.ticks.x=element_blank()
+  ) +
+  labs(title = "Trip Differences of Added Bike Lanes",
+       subtitle = "Between year 2018 and year 2019 during July 22pm",
+       y = "Trip Differences")
+
+```
