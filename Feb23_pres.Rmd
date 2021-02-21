@@ -72,12 +72,24 @@ bikelane_17d$LaneType[bikelane_17d$BikeLane=='3']<- '4: Sharrow'
 
 
 bikelane_20d$LaneType <- '3: Combination'
-bikelane_20d$LaneType[lane2_20d$BikeLane=='1']<- '1: Protected Lane'
-bikelane_20d$LaneType[lane2_20d$BikeLane=='2']<- '2: Unprotected Lane'
-bikelane_20d$LaneType[lane2_20d$BikeLane=='3']<- '4: Sharrow'
+bikelane_20d$LaneType[bikelane_20d$BikeLane=='1']<- '1: Protected Lane'
+bikelane_20d$LaneType[bikelane_20d$BikeLane=='2']<- '2: Unprotected Lane'
+bikelane_20d$LaneType[bikelane_20d$BikeLane=='3']<- '4: Sharrow'
 
 
 #add boro name
+bikelane_17d$Borough <- 'Manhattan'
+bikelane_17d$Borough[bikelane_17d$LBoro=='2']<- 'Bronx'
+bikelane_17d$Borough[bikelane_17d$LBoro=='3']<- 'Brooklyn'
+bikelane_17d$Borough[bikelane_17d$LBoro=='4']<- 'Queens'
+bikelane_17d$Borough[bikelane_17d$LBoro=='5']<- 'Staten Island'
+
+bikelane_20d$Borough <- 'Manhattan'
+bikelane_20d$Borough[bikelane_20d$LBoro=='2']<- 'Bronx'
+bikelane_20d$Borough[bikelane_20d$LBoro=='3']<- 'Brooklyn'
+bikelane_20d$Borough[bikelane_20d$LBoro=='4']<- 'Queens'
+bikelane_20d$Borough[bikelane_20d$LBoro=='5']<- 'Staten Island'
+
 new_18$Borough <- 'Manhattan'
 new_18$Borough[new_18$LBoro_1=='2']<- 'Bronx'
 new_18$Borough[new_18$LBoro_1=='3']<- 'Brooklyn'
@@ -114,6 +126,49 @@ new_20_clean<- new_20%>%
   summarize(Length=sum(SHAPE_Le_1),
             Borough=first(Borough))%>%
   filter(Length>1000)
+
+#combine all new lanes into one dataframe (not filtered by length)
+names(bikelane_17d)[names(bikelane_17d) == "SHAPE_Leng"] <- "Length"
+names(new_18)[names(new_18) == "SHAPE_Le_1"] <- "Length"
+names(new_19)[names(new_19) == "SHAPE_Le_1"] <- "Length"
+names(new_20)[names(new_20) == "SHAPE_Le_1"] <- "Length"
+
+names(new_18)[names(new_18) == "Street_1"] <- "Street"
+names(new_19)[names(new_19) == "Street_1"] <- "Street"
+names(new_20)[names(new_20) == "Street_1"] <- "Street"
+
+names(new_18)[names(new_18) == "SegmentID_"] <- "SegmentID"
+names(new_19)[names(new_19) == "SegmentID_"] <- "SegmentID"
+names(new_20)[names(new_20) == "SegmentID_"] <- "SegmentID"
+
+bikelane_17d$Year<- 2017
+new_18$Year<- 2018
+new_19$Year<- 2019
+new_20$Year<- 2020
+
+lane_17d_st<-bikelane_17d%>%
+  as.data.frame()%>%
+  select(Street, SegmentID, LaneType, Length, Borough, Year)
+
+new_18_st<-new_18%>%
+  as.data.frame()%>%
+  select(Street, SegmentID, LaneType, Length, Borough, Year)
+
+new_19_st<-new_19%>%
+  as.data.frame()%>%
+  select(Street, SegmentID, LaneType, Length, Borough, Year)
+
+new_20_st<-new_20%>%
+  as.data.frame()%>%
+  select(Street, SegmentID, LaneType, Length, Borough, Year)
+
+
+combo<- rbind(lane_17d_st, new_18_st, new_19_st, new_20_st)
+combo_sf<-inner_join(bikelane_20d, combo, by='SegmentID')
+
+combo_2<- combo%>%
+  count(Year=factor(Year))%>%
+  mutate(pct=prop.table(n))
 
 
 ```
@@ -174,11 +229,60 @@ There are three main categories of bike lane in New York City's LION  data: **Pr
 
 Unprotected bike lanes are the most common type found in New York City, while the borough of the Bronx has the highest bike lane mileage of any borough.
 
-```{r cars}
+![Bike Lanes by Type](images/plot_lanes_bytype.png)
+![Bike Lanes by Borough](images/plot_lanes_byBoro.png)
+
+From glancing at a map of these lanes across the city, we get a sense that the lane types are not evenly distributed throughout the 5 boroughs of New York City.
+
+```{r echo=FALSE, warning=FALSE}
+ggplot()+
+  geom_sf(data=boroughs, color='#222222', fill='#222222')+
+  geom_sf(data=big_parks, color='#4c6350', fill='#4c6350')+
+  geom_sf(data=bikelane_20d, aes(color = LaneType), size=0.5)+
+  scale_colour_manual(values = c('#F55536','#f57f36', '#f7ac2a', '#fcd93a'))+
+  labs(title='New York City Bike Lanes by Type 2021')+
+  facet_wrap(~LaneType)
+```
+
+
+Indeed, Manhattan hosts the largest share of protected bike lanes, while in Brooklyn, Staten Island, and the Bronx, unprotected lanes are the most common.
+
+![Bike Lanes by Borough and Type](images/plot_lanes_byBoroLaneType.png)
+
+## Identifying New Bike Lanes
+
+Our trip data begins in January 2018, so it is important to identify the bike lanes that have been added to the network since 2017. 
+
+### Data Cleaning
+
+To find the difference between bike lane files across time, we used the Symmetrical Differences tool in ArcGIS. Though this provided more accurate results than the method done in R, there was still an issue. Some stretches of road were represented geographically differntly (eg with 3 segments instead of 4), which resulted in many small stretches of street that were erroneously identified as having new bike lanes. To remedy this, we filtered out streets with less than 1000 ft of additional bike lane. 
+
+### New Lanes
+Only 15% of the current bike lane mileage in New York City was added during the study period. The majority of this was added during 2020, which may pose a challenge to generalizability (due to changing ridership patterns during COVID-19) or the volume of trip data available after the infrastructure investment.
+
+```{r echo=FALSE, warning=FALSE}
+ggplot(data=combo_2, aes(x=Year, y=pct, label=scales::percent(pct)))+
+  geom_col()+
+  geom_text(position = position_dodge(width = .9),    # move to center of bars
+            vjust = -0.5,    # nudge above top of bar
+            size = 3) + 
+  scale_y_continuous(labels = scales::percent)+
+  scale_x_discrete(labels=c('Before 2018', '2018', '2019', '2020'))+
+  labs(title='Bike Lanes Added During the Study Period', x='Year Built', y = 'Percent of Network')
+
+ggplot()+
+  geom_sf(data=boroughs, color='#222222', fill='#222222')+
+  geom_sf(data=big_parks, color='#4c6350', fill='#4c6350')+
+  geom_sf(data=combo_sf, aes(color=LaneType.y))+
+  scale_colour_manual(values = c('#F55536','#f57f36', '#f7ac2a', '#fcd93a'))+
+  facet_wrap(~Year)+
+  labs(title='New Bike Lanes During Study Period', subtitle='By Year and Type')
 
 ```
 
-## Current Lanes by Type
+Looking at the map for each year more closely reveals that 2018 and 2019 saw a limited number of corridors where significant stretches of new bike lane were added, particularly when one excludes sharrows, which offer minimal protection to cyclists.
+
+
 ```{r echo=FALSE, warning=FALSE}
 ggplot()+
   geom_sf(data=boroughs, color='#222222', fill='#222222')+
@@ -186,8 +290,66 @@ ggplot()+
   geom_sf(data=new_18_clean, aes(color = LaneType), size=0.9)+
   scale_colour_manual(values = c('#F55536','#f57f36', '#f7ac2a', '#fcd93a'))+
   labs(title='2018: New Bike Lanes by Type')
+
+ggplot()+
+  geom_sf(data=boroughs, color='#222222', fill='#222222')+
+  geom_sf(data=big_parks, color='#4c6350', fill='#4c6350')+
+  geom_sf(data=new_19_clean, aes(color = LaneType), size=0.9)+
+  scale_colour_manual(values = c('#F55536','#f57f36', '#f7ac2a', '#fcd93a'))+
+  labs(title='2019: New Bike Lanes by Type')
+
+ggplot()+
+  geom_sf(data=boroughs, color='#222222', fill='#222222')+
+  geom_sf(data=big_parks, color='#4c6350', fill='#4c6350')+
+  geom_sf(data=new_20_clean, aes(color = LaneType), size=0.9)+
+  scale_colour_manual(values = c('#F55536','#f57f36', '#f7ac2a', '#fcd93a'))+
+  labs(title='2020: New Bike Lanes by Type')
 ```
 
+
+### Citibike Extent
+Another complicating factor is which bike lane additions fall within the citibike network during the study period. We are still waiting to get data on station locations over time, but at least in the present day, the citibike network is still fairly limited. Many parts of Brooklyn, Queens, and the Bronx are not served, and there are no stations in Staten Island. 
+
+image of citibike network
+
+### Picking Some Streets
+The tables below show the streets in each year with the longest bike lane additions. Staten Island is filtered out entirely since there are no Citibike stations there. 
+
+```{r echo=FALSE, warning=FALSE}
+new_18_table<- new_18_clean%>%
+  as.data.frame()%>%
+  select(Street_1, Borough, LaneType, Length)%>%
+  filter(Borough!= 'Staten Island')%>%
+  arrange(desc(Length))%>%
+  head(15)%>%
+  kbl(caption='Longest New Bike Lanes in 2018')%>%
+  kable_styling()
+new_18_table
+
+new_19_table<- new_19_clean%>%
+  as.data.frame()%>%
+  select(Street_1, Borough, LaneType, Length)%>%
+  filter(Borough!= 'Staten Island')%>%
+  arrange(desc(Length))%>%
+  head(20)%>%
+  kbl(caption='Longest New Bike Lanes in 2019')%>%
+  kable_styling()
+new_19_table
+
+new_20_table<- new_20_clean%>%
+  as.data.frame()%>%
+  select(Street_1, Borough, LaneType, Length)%>%
+  arrange(desc(Length))%>%
+  head(20)%>%
+  kbl(caption='Longest New Bike Lanes in 2020')%>%
+  kable_styling()
+new_20_table
+
+```
+
+In 2018, the streets with the longest additions of bike lane that also fall within the Citibike network were all in Manhattan: **7th Avenue**, **E 111th St**, and **E 128th St**. We have mostly analyzed 2018 and 2019 trip data, so we choose to focus on two neighborhoods for our exploratory analysis of trips: **East Harlem** and **Chelsea**. 
+
+The East Harlem boundary we used is Manhattan Community District 11. Since the bike lane addition on 7th Avenue overlapped with several Community Districts and Neighborhood Tabulation Areas, we created a custom polygon surrounding the avenue. 
 
 # Trip Data Analysis
 
