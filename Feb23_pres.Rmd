@@ -258,6 +258,15 @@ Similarly, due to the size of dataset and we would like to keep associated attri
 \
 
 #### Trips on road
+\
+Then we use **spatial intersect** to allocate Street Name on trip points. If the trip points are intersect with buffered lanes, they will be assigned to a Street Name.
+But there is condition that one trip point will locate on several roads, at the condition when the roads are overlapped with each other at nodes.
+```{r pointIntersect, echo=FALSE, fig.cap="Point on Several Roads", out.width = '90%'}
+knitr::include_graphics("E:/NYCDOT/vis draft/images/pointsIntersection.png")
+```
+\
+Like the point shown in the figure. It is located at the node where `LEXINGTON AVENUE LINE`, `EAST 77 STREET`, and `LENOX HILL HOSPITAL` are overlapped. However, the **spatial intersect** within `st_join` function only assign one road name on that point. This process is random but is acceptable because it does not assign multiple Street Name on the point.
+\
 
 
 ### Exploratory Analysis
