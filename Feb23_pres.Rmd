@@ -211,7 +211,7 @@ Another type of wrong trajectories outside of NYC are trips that are connected t
 knitr::include_graphics("E:/NYCDOT/vis draft/images/type2_March25th.png")
 ```
 \
-In order to clean up these data, we use both clip and spatial intersection. To illustrate, the first type of data could be filtered out by clipping the trip data which are inside of NYC boundary. However, for the second type of data, we find out the intersected points of trajectories with the NYC boundary, and then filter out those trips with their unique id. Due to the size of data, we import data which are already cleaned up in the later part, and provide the codes that we used to clean data.
+In order to clean up these data, we use both clip and spatial intersection. To illustrate, the first type of data could be filtered out by clipping the trip data which are inside NYC boundary. However, for the second type of data, we find out the intersected points of trajectories with the NYC boundary, and then filter out those trips with their unique id. Due to the size of data, we import data which are already cleaned up in the later part, and provide the codes that we used to clean data.
 
 ```{r cleanoutside}
 #sample code that we used to clean up data
@@ -229,11 +229,33 @@ In order to clean up these data, we use both clip and spatial intersection. To i
   #filter(! id %in% Marchintersect$id)
 
 ```
-
+\
+There are also trips inside NYC that have strange trajectories. We plan to filter out these data by using several steps.
+<ol>
+<li>Buffering data of bike lanes.</li>
+<li>Transfer geometries of trips data from linestring to points.</li>
+<li>Filter out trip data which overlay with the buffered bike lanes.</li>
+<li>Gorup the points of trip data which are in the same route and have same id, which is identical to each trip.</li>
+</ol>
+\
 
 #### 15 feet buffer
 
+\
+Due to the size of data and hope to keep associated attribute table, we buffer the road data in ArcGIS.
+During the process of buffering, there is also trade-off:
+```{r bufferchoice, echo=FALSE, fig.cap="Buffer Choice", out.width = '90%'}
+knitr::include_graphics("E:/NYCDOT/vis draft/images/bufferChoice.png")
+```
+\
+Later, we will use the buffer of bike lanes to find out overlapped trip points. However, as the figure shows, when the buffer becomes wider, there are more overlaps between bike lanes. Sometimes, the trajectories of trips do not fully overlap with the road because the road buffer is not wide enough to cover all the trips. In other words, choosing thinner buffer has potential to loss more data, but choosing thicker buffer brings problems of overlapping roads. In the consideration of this trade-off, we choose to use **15-feet** buffer for bike lanes.
+\
+
 #### Line to Point
+
+\
+Similarly, due to the size of dataset and we would like to keep associated attributes of data, we use Geoprocessing Tool, **Generate Pointes Along Lines**, in ArcGIS to transfer our geometries from linestring to points. In order to keep the progress consistent, we make the **Point Placement** by 150 meters. In other words, for one trajectory of bike trip, there will be a point by each 150-meter, including the end points.
+\
 
 #### Trips on road
 
