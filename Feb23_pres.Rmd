@@ -273,6 +273,9 @@ Like the point shown in the figure. It is located at the node where `LEXINGTON A
 
 #### Yearly Trend
 
+\
+We would like to at first have a sense about how the trip data vary over year.
+\
 ```{r import2018data, message=FALSE, warning=FALSE, results='hide'}
 March2018 <- st_read("E:/NYCDOT/rideData_cleaned/March2018/March18_cleaned.shp")
 Apr2018 <- st_read("E:/NYCDOT/rideData_cleaned/Apr2018/Apr18_cleaned.shp")
@@ -357,6 +360,8 @@ ggplot(dayTrend2018, aes(x=day, y=n, color=as.character(month))) +
 ```
 
 \
+About the Daily Trend in 2018, there is no clear and general trend.
+\
 
 ##### 2. Hourly Trend
 ```{r hourTrend2018, message=FALSE, warning=FALSE, paged.print=FALSE}
@@ -427,6 +432,8 @@ ggplot(hourTrend2018, aes(x=rhour, y=n, color=as.character(month))) +
         axis.title.y = element_text(size = 12))
 ```
 
+\
+From the Hourly Trend graph in 2018, the bike trips peak at noon and at late night.
 \
 
 ##### 3.Weekday Trend
@@ -510,3 +517,7 @@ ggplot(wdayTrend2018, aes(x=wday, y=n, color=as.character(month))) +
         axis.title.y = element_text(size = 12))
 
 ```
+\
+If we view the data from the day of week, there is no clear trend about the data.
+Overall, the number of trips peak at noon and at night, and the later months tend to have more trips than earlier months. There is no clear trend how the data vary among days or days of week.
+\
