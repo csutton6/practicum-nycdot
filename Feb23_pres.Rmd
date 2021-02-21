@@ -19,6 +19,8 @@ library(mapview)
 library(RSocrata)
 library(ggthemes)
 library(kableExtra)
+library(viridis)
+library(lubridate)
 
 setwd('C:/Users/katee/Box Sync/Practicum/shp/')
 
@@ -115,6 +117,44 @@ new_20_clean<- new_20%>%
 
 
 ```
+
+```{r visfunction}
+##Functions
+#Plot functions
+plotTheme <- theme(
+  plot.title =element_text(size=12),
+  plot.subtitle = element_text(size=8),
+  plot.caption = element_text(size = 6),
+  axis.text.x = element_text(size = 10, angle = 45, hjust = 1),
+  axis.text.y = element_text(size = 10),
+  axis.title.y = element_text(size = 10),
+  # Set the entire chart region to blank
+  panel.background=element_blank(),
+  plot.background=element_blank(),
+  #panel.border=element_rect(colour="#F0F0F0"),
+  # Format the grid
+  panel.grid.major=element_line(colour="#D0D0D0",size=.2),
+  axis.ticks=element_blank())
+
+mapTheme <- function(base_size = 12) {
+  theme(
+    text = element_text( color = "black"),
+    plot.title = element_text(size = 16,colour = "black"),
+    plot.subtitle=element_text(face="italic"),
+    plot.caption=element_text(hjust=0),
+    axis.ticks = element_blank(),
+    panel.background = element_blank(),axis.title = element_blank(),
+    axis.text = element_blank(),
+    axis.title.x = element_blank(),
+    axis.title.y = element_blank(),
+    panel.grid.minor = element_blank(),
+    panel.border = element_rect(colour = "black", fill=NA, size=2),
+    strip.text.x = element_text(size = 14))
+}
+
+```
+
+
 # New York City Bike Infrastructure & Cycling Patterns
 
 ### Use Case
@@ -146,4 +186,296 @@ ggplot()+
   geom_sf(data=new_18_clean, aes(color = LaneType), size=0.9)+
   scale_colour_manual(values = c('#F55536','#f57f36', '#f7ac2a', '#fcd93a'))+
   labs(title='2018: New Bike Lanes by Type')
+```
+
+
+# Trip Data Analysis
+
+### Data Cleaning
+
+\
+There are several steps that we have used to clean our trip data, including both cleaning data fall outside of New York City, and wrong trajectories inside of city. 
+\
+
+#### Clip Trip Data
+
+\
+There are two types of data that are fall outside of New York City. We pick trips in March5th to demonstrate how these data look like.
+The first type is that there are some data located in Montreal, like the following image shows.
+```{r wrongoutside, echo=FALSE, fig.cap="Wrong trajectories falling outisde of NYC-1", out.width = '80%'}
+knitr::include_graphics("E:/NYCDOT/vis draft/images/type1_March5th.png")
+```
+\
+Another type of wrong trajectories outside of NYC are trips that are connected to another country, like the following image:
+```{r wrongoutside2, echo=FALSE, fig.cap="Wrong trajectories falling outisde of NYC-2", out.width = '80%'}
+knitr::include_graphics("E:/NYCDOT/vis draft/images/type2_March25th.png")
+```
+\
+In order to clean up these data, we use both clip and spatial intersection. To illustrate, the first type of data could be filtered out by clipping the trip data which are inside of NYC boundary. However, for the second type of data, we find out the intersected points of trajectories with the NYC boundary, and then filter out those trips with their unique id. Due to the size of data, we import data which are already cleaned up in the later part, and provide the codes that we used to clean data.
+
+```{r cleanoutside}
+#sample code that we used to clean up data
+##Get NYC data
+#Reference: http://gis.ny.gov/gisdata/inventories/details.cfm?DSID=927
+#NYC <- st_read("E:/NYCDOT/NYS_Civil_Boundaries_SHP/Cities_Towns.shp") %>%
+  #st_transform(st_crs(March)) %>%
+  #filter(NAME == "New York")
+
+#NYC_line <- st_cast(NYC, "MULTILINESTRING")
+
+#Marchintersect <- March[NYC_line,]
+
+#March18_cleaned <- March[NYC, ] %>%
+  #filter(! id %in% Marchintersect$id)
+
+```
+
+
+#### 15 feet buffer
+
+#### Line to Point
+
+#### Trips on road
+
+
+### Exploratory Analysis
+
+#### Yearly Trend
+
+```{r import2018data, message=FALSE, warning=FALSE, results='hide'}
+March2018 <- st_read("E:/NYCDOT/rideData_cleaned/March2018/March18_cleaned.shp")
+Apr2018 <- st_read("E:/NYCDOT/rideData_cleaned/Apr2018/Apr18_cleaned.shp")
+May2018 <- st_read("E:/NYCDOT/rideData_cleaned/May2018/May18_cleaned.shp")
+Jun2018 <- st_read("E:/NYCDOT/rideData_cleaned/Jun2018/June18_cleaned.shp")
+July2018 <- st_read("E:/NYCDOT/rideData_cleaned/July2018/July18_cleaned.shp")
+Aug2018 <- st_read("E:/NYCDOT/rideData_cleaned/Aug2018/Aug18_cleaned.shp")
+Sep2018 <- st_read("E:/NYCDOT/rideData_cleaned/Sep2018/Sep18_cleaned.shp")
+Oct2018 <- st_read("E:/NYCDOT/rideData_cleaned/Oct2018/Oct18_cleaned.shp")
+Nov2018 <- st_read("E:/NYCDOT/rideData_cleaned/Nov2018/Nov18_cleaned.shp")
+Dec2018 <- st_read("E:/NYCDOT/rideData_cleaned/Dec2018/Dec18_cleaned.shp")
+```
+
+\
+
+##### 1.Daily Trend
+```{r binddata, message=FALSE, warning=FALSE, results='hide'}
+dayTrend2018 <- rbind(March2018 %>% 
+        as.data.frame() %>% 
+        group_by(day) %>%
+        tally() %>%
+        mutate(month = 3), 
+      Apr2018 %>%
+        as.data.frame() %>%
+        group_by(day) %>%
+        tally() %>%
+        mutate(month = 4),
+      May2018 %>%
+        as.data.frame() %>%
+        group_by(day) %>%
+        tally() %>%
+        mutate(month = 5),
+      Jun2018 %>%
+        as.data.frame() %>%
+        group_by(day) %>%
+        tally() %>%
+        mutate(month = 6),
+      July2018 %>%
+        as.data.frame() %>%
+        group_by(day) %>%
+        tally() %>%
+        mutate(month = 7),
+      Aug2018 %>%
+        as.data.frame() %>%
+        group_by(day) %>%
+        tally() %>%
+        mutate(month = 8),
+      Sep2018 %>%
+        as.data.frame() %>%
+        group_by(day) %>%
+        tally() %>%
+        mutate(month = 9),
+      Oct2018 %>%
+        as.data.frame() %>%
+        group_by(day) %>%
+        tally() %>%
+        mutate(month = 10),
+      Nov2018 %>%
+        as.data.frame() %>%
+        group_by(day) %>%
+        tally() %>%
+        mutate(month = 11),
+      Dec2018 %>%
+        as.data.frame() %>%
+        group_by(day) %>%
+        tally() %>%
+        mutate(month = 12))
+
+```
+
+```{r plotdayTrend, message=FALSE, warning=FALSE}
+ggplot(dayTrend2018, aes(x=day, y=n, color=as.character(month))) + 
+  geom_line() +
+  labs(title = "Daily Trend in year 2018",
+       x = "Day",
+       y = "Count",
+       colour="Month") +
+  plotTheme +
+  theme(plot.title = element_text(size=14),
+        axis.title.x = element_text(size = 12),
+        axis.title.y = element_text(size = 12))
+```
+
+\
+
+##### 2. Hourly Trend
+```{r hourTrend2018, message=FALSE, warning=FALSE, paged.print=FALSE}
+hourTrend2018 <- rbind(March2018 %>% 
+        as.data.frame() %>% 
+        group_by(rhour) %>%
+        tally() %>%
+        mutate(month = 3), 
+      Apr2018 %>%
+        as.data.frame() %>%
+        group_by(rhour) %>%
+        tally() %>%
+        mutate(month = 4),
+      May2018 %>%
+        as.data.frame() %>%
+        group_by(rhour) %>%
+        tally() %>%
+        mutate(month = 5),
+      Jun2018 %>%
+        as.data.frame() %>%
+        group_by(rhour) %>%
+        tally() %>%
+        mutate(month = 6),
+      July2018 %>%
+        as.data.frame() %>%
+        group_by(rhour) %>%
+        tally() %>%
+        mutate(month = 7),
+      Aug2018 %>%
+        as.data.frame() %>%
+        group_by(rhour) %>%
+        tally() %>%
+        mutate(month = 8),
+      Sep2018 %>%
+        as.data.frame() %>%
+        group_by(rhour) %>%
+        tally() %>%
+        mutate(month = 9),
+      Oct2018 %>%
+        as.data.frame() %>%
+        group_by(rhour) %>%
+        tally() %>%
+        mutate(month = 10),
+      Nov2018 %>%
+        as.data.frame() %>%
+        group_by(rhour) %>%
+        tally() %>%
+        mutate(month = 11),
+      Dec2018 %>%
+        as.data.frame() %>%
+        group_by(rhour) %>%
+        tally() %>%
+        mutate(month = 12))
+
+```
+
+```{r vishourTrend, message=FALSE, warning=FALSE}
+
+ggplot(hourTrend2018, aes(x=rhour, y=n, color=as.character(month))) + 
+  geom_line() +
+  labs(title = "Hourly Trend in year 2018",
+       x = "Hour",
+       y = "Count",
+       colour="Month") +
+  plotTheme +
+  theme(plot.title = element_text(size=14),
+        axis.title.x = element_text(size = 12),
+        axis.title.y = element_text(size = 12))
+```
+
+\
+
+##### 3.Weekday Trend
+```{r wday2018, message=FALSE, warning=FALSE}
+
+wdayTrend2018 <- rbind(March2018 %>% 
+        as.data.frame() %>% 
+        mutate(wday = wday(time)) %>%
+        group_by(wday) %>%
+        tally() %>%
+        mutate(month = 3), 
+      Apr2018 %>%
+        as.data.frame() %>%
+        mutate(wday = wday(time)) %>%
+        group_by(wday) %>%
+        tally() %>%
+        mutate(month = 4),
+      May2018 %>%
+        as.data.frame() %>%
+        mutate(wday = wday(time)) %>%
+        group_by(wday) %>%
+        tally() %>%
+        mutate(month = 5),
+      Jun2018 %>%
+        as.data.frame() %>%
+        mutate(wday = wday(time)) %>%
+        group_by(wday) %>%
+        tally() %>%
+        mutate(month = 6),
+      July2018 %>%
+        as.data.frame() %>%
+        mutate(wday = wday(time)) %>%
+        group_by(wday) %>%
+        tally() %>%
+        mutate(month = 7),
+      Aug2018 %>%
+        as.data.frame() %>%
+        mutate(wday = wday(time)) %>%
+        group_by(wday) %>%
+        tally() %>%
+        mutate(month = 8),
+      Sep2018 %>%
+        as.data.frame() %>%
+        mutate(wday = wday(time)) %>%
+        group_by(wday) %>%
+        tally() %>%
+        mutate(month = 9),
+      Oct2018 %>%
+        as.data.frame() %>%
+        mutate(wday = wday(time)) %>%
+        group_by(wday) %>%
+        tally() %>%
+        mutate(month = 10),
+      Nov2018 %>%
+        as.data.frame() %>%
+        mutate(wday = wday(time)) %>%
+        group_by(wday) %>%
+        tally() %>%
+        mutate(month = 11),
+      Dec2018 %>%
+        as.data.frame() %>%
+        mutate(wday = wday(time)) %>%
+        group_by(wday) %>%
+        tally() %>%
+        mutate(month = 12))
+
+```
+
+```{r wday2018vis, message=FALSE, warning=FALSE}
+
+ggplot(wdayTrend2018, aes(x=wday, y=n, color=as.character(month))) + 
+  geom_line() +
+  scale_x_continuous(breaks = seq(0, 7, by = 1)) +
+  labs(title = "Weekday Trend in year 2018",
+       x = "Day of Week",
+       y = "Count",
+       colour="Month") +
+  plotTheme +
+  theme(plot.title = element_text(size=14),
+        axis.title.x = element_text(size = 12),
+        axis.title.y = element_text(size = 12))
+
 ```
