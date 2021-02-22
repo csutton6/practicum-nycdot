@@ -906,3 +906,5 @@ ggplot(data=new.num, aes(x=Street, y=Diff)) +
        y = "Trip Differences")
 
 ```
+
+#### Zoom in on Neighbhorhoods
