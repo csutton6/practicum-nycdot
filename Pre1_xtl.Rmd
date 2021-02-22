@@ -3,13 +3,16 @@ title: "Pre1_xtl"
 author: "Xintian Stella Li"
 date: "2/21/2021"
 output: 
-  rmarkdown::github_document
+  html_document:
+    code_folding: hide
+    toc:  true
+    toc_float: true
   
 ---
 ### Chelsea & East Harlem
 In the part, we select two neighborhoods to see their bike ridership trends in July 2018 and 2019. The first neighborhood is Chelsea, and the second is East Harlem. Chelsea lies on the west side of Manhattan borough. It is a typical representative of Manhattan, which has a high density built environment, large population, and highly diversed art and culture. East Harlem is more residential, we pick this neighborhood because it may be more similar to other residential boroughs in the NYC.
 
-We use trip data in July for this part, because that weather in July is most suitable for biking.
+We use trip data in July from 2018 and 2019 for this part, because that weather in July is most suitable for biking.
 
 | Chelsea | East Harlem|
 |---------|------------|
@@ -73,10 +76,8 @@ palette2 <- c("#6baed6","#08519c")
 ```{r set up working dictionary,include=FALSE}
 setwd("C:\\Users\\xinti\\Box\\MUSA_800_Practicum\\Data")
 ```
-
 ```{r read in data,include=FALSE}
 #bike data
-
 chel_07_2018 <- st_read("BikeTrips/rideData_cleaned/Chelsea_EastHarlem/chelsea_1807.shp") %>% st_transform(crs=4326)
 chel_07_2019 <- st_read("BikeTrips/rideData_cleaned/Chelsea_EastHarlem/chelsea_1907.shp") %>% st_transform(crs=4326)
 Har_07_2018 <- st_read("BikeTrips/rideData_cleaned/Chelsea_EastHarlem/harlem_1807.shp") %>% st_transform(crs=4326)
@@ -87,8 +88,12 @@ eastHarlem <- st_read("OtherData/East_Harlem_CD/East_Harlem_CD.shp")%>% st_trans
 #15 ft road buffer within the neighborhood boundary
 road15_chel <- st_read("OtherData/roadBuffer/neighborhoodBuffer/road15_chel.shp") %>% st_transform(crs=4326)
 road15_har <- st_read("OtherData/roadBuffer/neighborhoodBuffer/road15_har.shp") %>% st_transform(crs=4326)
+#new bike lanes from 2017d to 2018d
+addLane <- st_read("Infrastructure/bikeDiff/new18_clean_buffered/new_18_clean_15ft.shp") %>% st_transform(crs = 4326)
+newLane_chel <- addLane[chelsea,] %>% select(Street_1,geometry) %>% mutate(isNew = 1)
+newLane_har <- addLane[eastHarlem,]%>% select(Street_1,geometry) %>% group_by(Street_1) %>% tally() %>% mutate(isNew = 1) %>% select(-n)
 ```
-First, Let's see the ridership trend by hour and by day. As shown in the plots below, ridership in both neighborhood increase from 2018 to 2019. The ridership in Chelsea is much higher than that in East Harlem and the daily peaks are more obvious. Also, the frequency of bike use in a month increase.
+First, Let's see the ridership trend by hour and by day. As shown in the plots below, ridership in both neighborhood increase from 2018 to 2019. The ridership in Chelsea is much higher than that in East Harlem and the daily peaks are more obvious. The frequency of bike use in a month increase in both neighborhoods.
 
 ```{r vis 1}
 grid.arrange(
@@ -98,32 +103,32 @@ grid.arrange(
                   interval60 = floor_date(time,unit = "hour")) %>% 
            select(-time) %>% group_by(interval60) %>% tally() %>% 
            mutate(year = 2018))+geom_line(aes(x=interval60,y=n))+
-    labs(title = "Ridership pr hour pr day, Chelsea, July,2018")+plotTheme,
+    labs(title = "Ridership pr hour pr day,Chelsea,July,2018")+plotTheme,
   ggplot(chel_07_2019 %>% 
            st_drop_geometry() %>%
            mutate(time = ymd_hms(rcrd_tm),
                   interval60 = floor_date(time,unit = "hour")) %>% 
            select(-time) %>% group_by(interval60) %>% tally() %>% 
            mutate(year = 2019))+geom_line(aes(x=interval60,y=n))+
-    labs(title = "Ridership pr hour pr day, Chelsea, July,2019")+plotTheme,
+    labs(title = "Ridership pr hour pr day,Chelsea,July,2019")+plotTheme,
   ggplot(Har_07_2018 %>% 
            st_drop_geometry() %>%
            mutate(time = ymd_hms(rcrd_tm),
                   interval60 = floor_date(time,unit = "hour")) %>% 
            select(-time) %>% group_by(interval60) %>% tally() %>% 
            mutate(year = 2018))+geom_line(aes(x=interval60,y=n))+
-    labs(title = "Ridership pr hour pr day, East Harlem, July,2018")+plotTheme,
+    labs(title = "Ridership pr hour pr day,East Harlem,July,2018")+plotTheme,
   ggplot(Har_07_2019 %>% 
            st_drop_geometry() %>%
            mutate(time = ymd_hms(rcrd_tm),
                   interval60 = floor_date(time,unit = "hour")) %>% 
            select(-time) %>% group_by(interval60) %>% tally() %>% 
            mutate(year = 2019))+geom_line(aes(x=interval60,y=n))+
-    labs(title = "Ridership pr hour pr day, East Harlem, July,2019")+plotTheme
+    labs(title = "Ridership pr hour pr day,East Harlem,July,2019")+plotTheme
 )
 
 ```
-The graph below shows the hourly ridership in a day. This plot shows that in Chelsea, the morning peak hour is around 11 am and the night peak hour is around 10 pm. The daily periodicity become more obvious in 2019, which may indicate that more people use bike to commute to work in their daily life. However, although the ridership in East Harlem also increase, there is no obvious periodicity.
+The graph below shows the hourly ridership in a day. This plot shows that in Chelsea, the morning peak hour is around 11 am and the night peak hour is around 10 pm. The daily periodicity in Chelsea become more obvious in 2019, which may indicate that more people use bike to commute to work in their daily life. However, although the ridership in East Harlem also increase, there is no obvious periodicity in a day.
 
 ```{r}
 # bike ridership by hour 
@@ -153,7 +158,10 @@ ggplot(rbind(
            neighborhood = "East Harlem",
            gr = paste(year,neighborhood,sep = "_"))))+
     geom_line(aes(x=rhour,y = n, group = gr,color = gr,binwidth = 1))+plotTheme+
-  labs(title="Ridership pr hour in a day")
+  labs(title="Ridership pr hour in a day",
+       x = "24 hours in a day",
+       y ="Trip counts",
+       color = "Labels")
 ```
 This plot shows bike ridership by the day of week.The peak bicycle use does not occur on weekends in both neighborhoods.
 
@@ -188,11 +196,15 @@ ggplot(rbind(
     mutate(year = "2019",
            neighborhood = "East Harlem",
            gr = paste(year,neighborhood,sep = "_"))))+
-  geom_line(aes(x=dotw,y = n, group = gr,color = gr,binwidth = 1))+plotTheme
+  geom_line(aes(x=dotw,y = n, group = gr,color = gr))+
+  labs(title = "Bike ridership by day of week",
+       x = "Day of the week",
+       y ="Trip counts",
+       color = "Labels")+ plotTheme
 ```
-Next, we study the ridership changes in two boroughs seperately.
+Next, we study the ridership changes in two boroughs separately.
 
-This graph compares the ridership in Chelsea in two years. As you can see, the increase of ridership mainly happens in the south west part of the neighborhood. For example, the west 22 ST had a monthly ridership of 1020 in 2019. The riverside roads also see an obvious increase in these two years.  
+This graph compares the ridership in Chelsea in two years. As you can see, the increase of ridership mainly happens in the south west part of the neighborhood. For example, the west 22 ST had a monthly ridership of 1020 in 2019. The riverside roads also see an obvious increase between these two years.  
 
 
 ```{r}
@@ -231,13 +243,20 @@ har_Diff1819 <- road15_har %>%
   select(Street,trip18,trip19,geometry) %>% 
   mutate(tripDiff = trip19-trip18,
          Neighborhood = "East Harlem") %>% 
-  select(-trip18,-trip19) 
+  select(-trip18,-trip19) %>% 
+  merge(.,newLane_har %>%
+          st_drop_geometry(),by.x="Street",by.y="Street_1",all.x=T) %>%
+  replace(.,is.na(.),0)
 
 chel_Diff1819 <- road15_chel %>% 
   select(Street,trip18,trip19,geometry) %>% 
   mutate(tripDiff = trip19-trip18,
          Neighborhood = "Chelsea") %>% 
-  select(-trip18,-trip19) 
+  select(-trip18,-trip19) %>% 
+  merge(.,newLane_chel %>%
+          st_drop_geometry(),by.x="Street",by.y="Street_1",all.x=T) %>%
+  replace(.,is.na(.),0)
+
 
 #Chelsea
 ggplot() + 
@@ -246,23 +265,40 @@ ggplot() +
   scale_color_viridis(direction = 1,
                       discrete = F, option = "viridis",
                       na.value = "#D4D4D4")+
-  labs(title = "Trip Count per road, Chelsea, July, 2018") + facet_wrap(~Year)+ mapTheme()
+  labs(title = "Trip Count per road in July, Chelsea") + facet_wrap(~Year)+ mapTheme()
 ```
-This map visualize the difference from 2018 to 2019. Although most roads see increase from two years. There are some road where the ridership drops in 2019. For instance, the west 16th st, had a drop of 101 ridership in July. The ridership in west 25th and 36th st also dropped.
+Then we take a closer look at the bicycle use in Chelsea. This map visualize the difference in ridership between 2018 and 2019. Although most roads see increase from two years. There are some road where the ridership drops in 2019. For instance, the west 16th st, had a drop of 101 ridership in July. The ridership in west 25th and 36th st also dropped.
+
+We also pay attention to the ridership change on newly added bike lanes. As you can see on the right map, the ridership see great increase on both 7th Ave and 9th Ave, which had new bike lanes in 2018.
 
 ```{r}
 # Diff in two years
-ggplot()+
+grid.arrange(
+  ggplot()+
   geom_sf(data = chelsea,fill = "#f7f5f5",col = NA)+
   geom_sf(data = chel_Diff1819,aes(color = tripDiff))+
   scale_color_viridis(direction = 1,
                       discrete = F, option = "viridis",
                       na.value = "#D4D4D4")+
-  labs(title = "Trip Count Difference between 2018 & 2019, Chelsea") +
-  mapTheme()
+  labs(title = "Ridership increase,
+       Chelsea, 2018-2019") +
+  mapTheme(),
+  ggplot()+
+  geom_sf(data = chelsea,fill = "#f7f5f5",col = NA)+
+  geom_sf(data = chel_Diff1819[chel_Diff1819$isNew==1,],aes(color = tripDiff))+
+  scale_color_viridis(direction = 1,
+                      discrete = F, option = "viridis",
+                      na.value = "#D4D4D4")+
+  labs(title = "Ridership increase on new 
+  bikelanes, Chelsea, 2018-2019") +
+  mapTheme(),
+  ncol=2
+)
+
 
 ```
-In East Harlem, the ridership and the increase in ridership are more concentrated on several roads. The PARK AVENUE has the highest ridership of 311 in July, 2019. Other connecting roads around park avenue also see increase in bike ridership, however, the increase is relatively small compared with that on Park Avenue.
+
+In East Harlem, the ridership are more concentrated on several roads. The PARK AVENUE has the highest ridership of 311 in July, 2019. Other connecting roads around park avenue also see increase in bike ridership, however, the increase is relatively small compared with that on Park Avenue.
 
 
 ```{r}
@@ -273,25 +309,41 @@ ggplot() +
   scale_color_viridis(direction = 1,
                       discrete = F, option = "viridis",
                       na.value = "#D4D4D4")+
-  labs(title = "Trip Count per road, East Harlem, July, 2018") +
+  labs(title = "Trip Count per road in July, East Harlem") +
   facet_wrap(~Year)+
   mapTheme()
 ```
 
-
+When we see the ridership difference between two years, we can see the increase in ridership also concentrated on Park AVE. There are also some increase on new added bike lanes.
 
 
 
 ```{r}
-ggplot()+
+grid.arrange(
+  ggplot()+
   geom_sf(data = eastHarlem,fill = "#f7f5f5",col = NA)+
   geom_sf(data = har_Diff1819,aes(color = tripDiff))+
   scale_color_viridis(direction = 1,
                       discrete = F, option = "viridis",
                       na.value = "#D4D4D4")+
-  labs(title = "Trip Count Difference between 2018 & 2019, East Harlem") +
-  mapTheme()
+  labs(title = "Ridership increase, East Harlem, 
+       2018-2019") +
+  mapTheme(),
+  ggplot()+
+  geom_sf(data = eastHarlem,fill = "#f7f5f5",col = NA)+
+  geom_sf(data = har_Diff1819[har_Diff1819$isNew==1,],aes(color = tripDiff))+
+  scale_color_viridis(direction = 1,
+                      discrete = F, option = "viridis",
+                      na.value = "#D4D4D4")+
+  labs(title = "Ridership increase on new 
+  bikelanes, East Harlem,
+  2018-2019") +
+  mapTheme(),
+  ncol=2
+)
+
 ```
-There is few added bike lanes in these two neiborhoods in 2019. We will study the relationship between the riderhsip increase and the newly added bike lanes in the next steps.
-![Chel](images/newbikelane2019Chelsea.png)
-![EH](images/newbikelane2019EH.png)
+
+
+
+
