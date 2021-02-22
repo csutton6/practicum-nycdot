@@ -817,6 +817,8 @@ ggplot() +
 ```
 
 \
+From the figure, we could see that 2019 have much more data than 2018 overall. Also, bike lanes where have more trips in 2018 also have more trips in 2019.
+\
 
 ##### Trips Comparsion on Added Bike Lanes
 
@@ -888,7 +890,7 @@ new.num <- new.num %>%
 
 ```
 
-
+The following table shows the number of added trips on added bike lanes. 
 ```{r showtable}
 new.num %>% 
   select(Street, Diff) %>% 
@@ -896,7 +898,7 @@ new.num %>%
   kable_styling()
 
 ```
-
+A bar graph is also made to visualize how many more trips on the added bike lanes.
 ```{r showdiffvis}
 ggplot(data=new.num, aes(x=Street, y=Diff)) +
   geom_bar(stat="identity") +
@@ -914,6 +916,7 @@ ggplot(data=new.num, aes(x=Street, y=Diff)) +
        y = "Trip Differences")
 
 ```
+\
 
 #### Zoom in on Neighbhorhoods
 
