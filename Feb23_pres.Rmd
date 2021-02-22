@@ -318,7 +318,7 @@ ggplot()+
 ### Citibike Extent
 Another complicating factor is which bike lane additions fall within the citibike network during the study period. We are still waiting to get data on station locations over time, but at least in the present day, the citibike network is still fairly limited. Many parts of Brooklyn, Queens, and the Bronx are not served, and there are no stations in Staten Island. 
 
-image of citibike network
+![NYC Citibike Network Extent 2021](images/citibike_extent.PNG)
 
 ### Picking Some Streets
 The tables below show the streets in each year with the longest bike lane additions. Staten Island is filtered out entirely since there are no Citibike stations there. 
@@ -356,8 +356,6 @@ new_20_table
 ```
 
 In 2018, the streets with the longest additions of bike lane that also fall within the Citibike network were all in Manhattan: **7th Avenue**, **E 111th St**, and **E 128th St**. We have mostly analyzed 2018 and 2019 trip data, so we choose to focus on two neighborhoods for our exploratory analysis of trips: **East Harlem** and **Chelsea**. 
-
-The East Harlem boundary we used is Manhattan Community District 11. Since the bike lane addition on 7th Avenue overlapped with several Community Districts and Neighborhood Tabulation Areas, we created a custom polygon surrounding the avenue. 
 
 # Trip Data Analysis
 
