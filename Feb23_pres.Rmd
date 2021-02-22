@@ -21,6 +21,14 @@ library(ggthemes)
 library(kableExtra)
 library(viridis)
 library(lubridate)
+library(tigris)
+library(tidycensus)
+library(riem)
+library(gridExtra)
+library(knitr)
+library(RSocrata)
+library(httr)
+library(rgdal)
 
 setwd('C:/Users/katee/Box Sync/Practicum/shp/')
 
@@ -921,52 +929,6 @@ We use trip data in July for this part, because that weather in July is most sui
 
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-library(tidyverse)
-library(sf)
-library(lubridate)
-library(tigris)
-library(tidycensus)
-library(viridis)
-library(riem)
-library(gridExtra)
-library(knitr)
-library(RSocrata)
-library(mapview)
-library(httr)
-library(rgdal)
-
-plotTheme <- theme(
-  plot.title =element_text(size=12),
-  plot.subtitle = element_text(size=8),
-  plot.caption = element_text(size = 6),
-  axis.text.x = element_text(size = 10, angle = 45, hjust = 1),
-  axis.text.y = element_text(size = 10),
-  axis.title.y = element_text(size = 10),
-  # Set the entire chart region to blank
-  panel.background=element_blank(),
-  plot.background=element_blank(),
-  #panel.border=element_rect(colour="#F0F0F0"),
-  # Format the grid
-  panel.grid.major=element_line(colour="#D0D0D0",size=.2),
-  axis.ticks=element_blank())
-
-mapTheme <- function(base_size = 12) {
-  theme(
-    text = element_text( color = "black"),
-    plot.title = element_text(size = 16,colour = "black"),
-    plot.subtitle=element_text(face="italic"),
-    plot.caption=element_text(hjust=0),
-    axis.ticks = element_blank(),
-    panel.background = element_blank(),axis.title = element_blank(),
-    axis.text = element_blank(),
-    axis.title.x = element_blank(),
-    axis.title.y = element_blank(),
-    panel.grid.minor = element_blank(),
-    panel.border = element_rect(colour = "black", fill=NA, size=2),
-    strip.text.x = element_text(size = 14))
-}
-
 
 palette5 <- c("#eff3ff","#bdd7e7","#6baed6","#3182bd","#08519c")
 palette4 <- c("#D2FBD4","#92BCAB","#527D82","#123F5A")
