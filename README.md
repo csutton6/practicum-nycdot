@@ -9,4 +9,4 @@ Group Member: Kate Sutton, Jiaxuan Lyu, Xintian Stella Li
 
 ## <a href ="https://htmlpreview.github.io/?https://github.com/kateesutt/practicum-nycdot/blob/main/Feb23_pres.html">Data wrangling / Exploratory analysis</a>
 
-## <a href="https://github.com/kateesutt/practicum-nycdot/tree/main">Modeling</a>
+## <a href="https://github.com/kateesutt/practicum-nycdot/blob/main/Modeling.md">Modeling</a>
