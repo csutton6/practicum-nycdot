@@ -12,7 +12,9 @@ Q:
 ### Difference in Difference
 
 <br>
+
 #### East Harlem
+
 
 |         | Pre   |  Post   |   Difference  |
 |---------|------:|--------:|--------------:|
