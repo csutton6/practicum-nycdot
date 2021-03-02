@@ -16,7 +16,7 @@ Q:
 |Treatment|7th Avenue|Southbound|Protected|June 31 2018|May & June 2018|July & August 2018|
 |Control|3rd Avenue|Northbound|No Bike Lane|
 
-![chelsea map]()
+![chelsea map](images/downtown_chosenlanes.png)
 
 **East Harlem**
 *Motivation*: Four streets in East Harlem all got new bike lanes in 2018. This area is lower density than Chelsea and may generalize better to the rest of NYC. Control streets are other side streets in the neighborhood. 
@@ -31,7 +31,7 @@ Q:
 |Control|E 127th St|Westbound|No Bike Lane|
 |Control|E 124th St|Eastbound|No Bike Lane|
 
-![east harlem map]()
+![east harlem map](images/eharlem_chosenlanes.png)
 
 ### Difference in Difference
 
