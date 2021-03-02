@@ -52,3 +52,9 @@ Q:
 #### Chelsea
 
 <img src="https://github.com/kateesutt/practicum-nycdot/blob/main/images/diff%20in%20diff.png">
+
+|         | Pre   |  Post   |   Difference  |
+|---------|------:|--------:|--------------:|
+|Treatment|  4729  |    7046  |            	2317|
+|Control  |  1809  |    2679  |              870|
+|Difference|	2920 |     4367 |             1447|
