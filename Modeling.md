@@ -3,8 +3,16 @@
 <br>
 
 Q:
-1)Modeling strategy 
+1)Modeling strategy <br>
 2)What is your plan for generalizability
+
+### Treatment and Control Groups
+
+** Chelsea Group **
+|Street|Street Direction|Bike Lane Type|Date Added|Pre Period|Post Period|
+|------|--------------|----------------|----------|----------|-----------|
+|7th Avenue|Southbound|Protected|June 31 2018|May & June 2018|July & August 2018|
+|3rd Avenue|Northbound|No Bike Lane|
 
 
 
