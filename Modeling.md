@@ -8,7 +8,7 @@ Q:
 
 ### Treatment and Control Groups
 
-**Chelsea** <br>
+**Lower Manhattan** <br>
 *Motivation*: 7th Avenue was the longest addition of new protected bikelane in 2018. 
 3rd Avenue was chosen as the control because it was the only avenue without a bike lane in this area in 2018.
 |Group Type|Street|Street Direction|Bike Lane Type|Date Added|Pre Period|Post Period|
@@ -16,7 +16,7 @@ Q:
 |Treatment|7th Avenue|Southbound|Protected|June 31 2018|May & June 2018|July & August 2018|
 |Control|3rd Avenue|Northbound|No Bike Lane|
 
-![chelsea map](images/downtown_chosenlanes.png)
+![lower manhattan map](images/downtown_chosenlanes.png)
 
 **East Harlem** <br>
 *Motivation*: Four streets in East Harlem all got new bike lanes in 2018. This area is lower density than Chelsea and may generalize better to the rest of NYC. Control streets are other side streets in the neighborhood. 
@@ -49,7 +49,7 @@ Q:
 
 <img src="https://github.com/kateesutt/practicum-nycdot/blob/main/images/eh_diff.jpeg">
 
-#### Chelsea
+#### Lower Manhattan
 
 <img src="https://github.com/kateesutt/practicum-nycdot/blob/main/images/diff%20in%20diff.png">
 
