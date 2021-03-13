@@ -62,6 +62,29 @@ Q:
 
 
 
+### Difference in Difference over year
+
+
+#### East Harlem
+
+Using Sep18 and Sep19 as comparison:
+
+
+|         | Pre   |  Post   |   Difference  |
+|---------|------:|--------:|--------------:|
+|Treatment|  178  |    332  |            154|
+|Control  |  152  |    407  |            255|
+|Difference|	-26 |      75 |            101|
+
+
+
+
+
+
+
+
+
+
 <br>
 Questions:
 1) For now, like the new lanes added in 2018c, we assume the lane is added at Sep 2018, and then use the Aug, Sep, Oct, and Nov to do previous and post comparison. We are wondering is the assumption acceptable? Or?
