@@ -139,6 +139,16 @@ reg_M <- lm(count ~ bikelane, data=March2July_M)
 
 <br>
 <br>
+
+**Bronx**
+
+<br>
+There are only 10 trips from March to July inside Bronx. **None** of them uses bikelanes.
+
+
+
+<br>
+<br>
 Questions:
 1) For now, like the new lanes added in 2018c, we assume the lane is added at Sep 2018, and then use the Aug, Sep, Oct, and Nov to do previous and post comparison. We are wondering is the assumption acceptable? Or?
 2) Would our controls be ok?
