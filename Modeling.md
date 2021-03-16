@@ -95,7 +95,7 @@ Steps:
 2)Slice the aggregated data into borough: Manhattan, Bronx, Brooklyn, Queens, Staten Island
 <br> Inside Staten Island, there is no bike trips from March to July
 <br>
-3)We create a new feature called bikeland. Also, **we assume that if the bike track intersects with the bikelanes(15-feet buffer), the bike trip passes through/uses/is benefited from the bikelanes**. Therefore, if the bike track intersect with bikelanes, the value of column bikelane will be "yes", and vise versa.
+3)We create a new feature called bikeland. Also, **we assume that if the bike track intersects with the bikelanes(15-feet buffer), the bike trip passes through/uses/is benefited from the bikelanes**. Additionally, we only use <b>protected bikelanes<b> and <b>unprotected bikelanes</b>. Therefore, if the bike track intersect with bikelanes, the value of column bikelane will be "yes", and vise versa.
 <br>
 
 
