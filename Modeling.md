@@ -233,6 +233,20 @@ reg_Bk <- lm(count ~ bikelane, data=March2July_Bk)
 
 
 
+<br>
+<br>
+
+About the % of trips uses bikelanes:
+<br>
+
+```r
+nrow(March2July_Q %>% filter(bikelane == "yes")) / nrow(March2July_Q)
+[1] 0.9476969
+```
+
+<br>
+
+
 
 
 
@@ -242,8 +256,5 @@ reg_Bk <- lm(count ~ bikelane, data=March2July_Bk)
 <br>
 <br>
 Questions:
-1) For now, like the new lanes added in 2018c, we assume the lane is added at Sep 2018, and then use the Aug, Sep, Oct, and Nov to do previous and post comparison. We are wondering is the assumption acceptable? Or?
-2) Would our controls be ok?
-3) Question about normalizing data
-4) BoxR-->cannot read shp file
+
 
