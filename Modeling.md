@@ -97,7 +97,7 @@ Steps:
 <br>
 3)We create a new feature called bikeland. Also, **we assume that if the bike track intersects with the bikelanes(15-feet buffer), the bike trip passes through/uses/is benefited from the bikelanes**. Additionally, we only use <b>protected bikelanes<b> and <b>unprotected bikelanes</b>. Therefore, if the bike track intersect with bikelanes, the value of column bikelane will be "yes", and vise versa.
 <br>
-
+<br>
 
 ```r
 March2July_M <- March2July_M %>%
@@ -135,7 +135,14 @@ reg_M <- lm(count ~ bikelane, data=March2July_M)
 <tr><td colspan="2" style="border-bottom: 1px solid black"></td></tr><tr><td style="text-align:left"><em>Note:</em></td><td style="text-align:right"><sup>*</sup>p<0.1; <sup>**</sup>p<0.05; <sup>***</sup>p<0.01</td></tr>
 </table>
 
-
+<br>
+<br>
+About the % of trips uses bikelanes:
+<br>
+```r
+> nrow(March2July_M %>% filter(bikelane == "yes")) / nrow(March2July_M)
+[1] 0.9604328
+```
 
 <br>
 <br>
