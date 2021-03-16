@@ -86,15 +86,20 @@ Using Sep18 and Sep19 as comparison:
 ### Coefficients between the number of trips and whether there is a bikelanes
 
 <br>
+
 Steps:
+
 <br>
+
 1)Aggregate monthly trip data into one
 <br>
 2)Slice the aggregated data into borough: Manhattan, Bronx, Brooklyn, Queens, Staten Island
 <br> Inside Staten Island, there is no bike trips from March to July
 3)We create a new feature called bikeland. Also, **we assume that if the bike track intersects with the bikelanes, the bike trip passes through/uses/is benefited from the bikelanes**. Therefore, if the bike track intersect with bikelanes, the value of column bikelane will be "yes", and vise versa.
 <br>
-```R
+
+
+```r
 March2July_M <- March2July_M %>%
   mutate(bikelane = ifelse(id %in% M_inbike$id, "yes", "no"))
 ```
@@ -102,6 +107,7 @@ March2July_M <- March2July_M %>%
 
 
 
+<br>
 <br>
 Questions:
 1) For now, like the new lanes added in 2018c, we assume the lane is added at Sep 2018, and then use the Aug, Sep, Oct, and Nov to do previous and post comparison. We are wondering is the assumption acceptable? Or?
