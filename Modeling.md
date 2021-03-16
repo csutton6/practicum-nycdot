@@ -143,7 +143,7 @@ reg_M <- lm(count ~ bikelane, data=March2July_M)
 **Bronx**
 
 <br>
-There are only 10 trips from March to July inside Bronx. **None** of them uses bikelanes.
+There are only 10 trips from March to July inside Bronx. <b>None</b> of them uses bikelanes.
 
 
 
