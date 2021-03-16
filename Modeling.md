@@ -147,6 +147,42 @@ There are only 10 trips from March to July inside Bronx. <b>None</b> of them use
 
 
 
+
+<br>
+<br>
+
+**Queens**
+
+<br>
+
+```r
+reg_Q <- lm(count ~ bikelane, data=March2July_Q)
+```
+
+<br>
+<br>
+
+
+
+<table style="text-align:center"><caption><strong>Regression results</strong></caption>
+<tr><td colspan="2" style="border-bottom: 1px solid black"></td></tr><tr><td style="text-align:left"></td><td><em>Dependent variable:</em></td></tr>
+<tr><td></td><td colspan="1" style="border-bottom: 1px solid black"></td></tr>
+<tr><td style="text-align:left"></td><td>count</td></tr>
+<tr><td colspan="2" style="border-bottom: 1px solid black"></td></tr><tr><td style="text-align:left">bikelaneyes</td><td>-0.000 (0.000)</td></tr>
+<tr><td style="text-align:left">Constant</td><td>1.000<sup>***</sup> (0.000)</td></tr>
+<tr><td colspan="2" style="border-bottom: 1px solid black"></td></tr><tr><td style="text-align:left">Observations</td><td>8,096</td></tr>
+<tr><td style="text-align:left">R<sup>2</sup></td><td>0.500</td></tr>
+<tr><td style="text-align:left">Adjusted R<sup>2</sup></td><td>0.500</td></tr>
+<tr><td style="text-align:left">Residual Std. Error</td><td>0.000 (df = 8094)</td></tr>
+<tr><td style="text-align:left">F Statistic</td><td>8,093.885<sup>***</sup> (df = 1; 8094)</td></tr>
+<tr><td colspan="2" style="border-bottom: 1px solid black"></td></tr><tr><td style="text-align:left"><em>Note:</em></td><td style="text-align:right"><sup>*</sup>p<0.1; <sup>**</sup>p<0.05; <sup>***</sup>p<0.01</td></tr>
+</table>
+
+
+
+
+
+<br>
 <br>
 <br>
 Questions:
