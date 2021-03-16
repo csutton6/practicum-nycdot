@@ -90,7 +90,6 @@ Using Sep18 and Sep19 as comparison:
 Steps:
 
 <br>
-
 1)Aggregate monthly trip data into one
 <br>
 2)Slice the aggregated data into borough: Manhattan, Bronx, Brooklyn, Queens, Staten Island
@@ -105,7 +104,34 @@ March2July_M <- March2July_M %>%
   mutate(bikelane = ifelse(id %in% M_inbike$id, "yes", "no"))
 ```
 
+<br>
+#### March to July
 
+<br>
+**Manhattan**
+<br>
+```r
+Call:
+lm(formula = count ~ bikelane, data = March2July_M)
+
+Residuals:
+             Min               1Q           Median               3Q              Max 
+-0.0000000006926  0.0000000000000  0.0000000000000  0.0000000000000  0.0000000000000 
+
+Coefficients:
+                         Estimate            Std. Error            t value
+(Intercept)  0.999999999998350320  0.000000000000019757 50615043211567.031
+bikelaneyes -0.000000000000004092  0.000000000000020160             -0.203
+                       Pr(>|t|)    
+(Intercept) <0.0000000000000002 ***
+bikelaneyes               0.839    
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Residual standard error: 0.00000000000165 on 176230 degrees of freedom
+Multiple R-squared:    0.5,	Adjusted R-squared:    0.5 
+F-statistic: 1.762e+05 on 1 and 176230 DF,  p-value: < 0.00000000000000022
+```
 
 
 <br>
