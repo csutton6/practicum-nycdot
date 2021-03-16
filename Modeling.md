@@ -110,7 +110,8 @@ March2July_M <- March2July_M %>%
 <br>
 **Manhattan**
 <br>
-```r
+
+
 Call:
 lm(formula = count ~ bikelane, data = March2July_M)
 
@@ -131,7 +132,7 @@ Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’
 Residual standard error: 0.00000000000165 on 176230 degrees of freedom
 Multiple R-squared:    0.5,	Adjusted R-squared:    0.5 
 F-statistic: 1.762e+05 on 1 and 176230 DF,  p-value: < 0.00000000000000022
-```
+
 
 
 <br>
