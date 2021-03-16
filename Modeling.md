@@ -105,10 +105,19 @@ March2July_M <- March2July_M %>%
 ```
 
 <br>
+
 #### March to July
 
 <br>
+
 **Manhattan**
+
+<br>
+
+```r
+reg_M <- lm(count ~ bikelane, data=March2July_M)
+```
+
 <br>
 
 
