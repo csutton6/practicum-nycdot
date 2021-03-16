@@ -140,8 +140,11 @@ reg_M <- lm(count ~ bikelane, data=March2July_M)
 About the % of trips uses bikelanes:
 <br>
 ```r
-> nrow(March2July_M %>% filter(bikelane == "yes")) / nrow(March2July_M)
+
+nrow(March2July_M %>% filter(bikelane == "yes")) / nrow(March2July_M)
+
 [1] 0.9604328
+
 ```
 
 <br>
