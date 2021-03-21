@@ -233,3 +233,31 @@ reg_Bk <- lm(Count ~ bikeline, data=info.y18_Bk)
 <br>
 
 
+**Staten Island**
+
+<br>
+
+```r
+reg_S <- lm(Count ~ bikeline, data=info.y18_S)
+```
+
+<br>
+
+<table style="text-align:center"><caption><strong>Regression results</strong></caption>
+<tr><td colspan="2" style="border-bottom: 1px solid black"></td></tr><tr><td style="text-align:left"></td><td><em>Dependent variable:</em></td></tr>
+<tr><td></td><td colspan="1" style="border-bottom: 1px solid black"></td></tr>
+<tr><td style="text-align:left"></td><td>Count</td></tr>
+<tr><td colspan="2" style="border-bottom: 1px solid black"></td></tr><tr><td style="text-align:left">bikelineyes</td><td>-0.023 (0.045)</td></tr>
+<tr><td style="text-align:left">Constant</td><td>1.023<sup>***</sup> (0.009)</td></tr>
+<tr><td colspan="2" style="border-bottom: 1px solid black"></td></tr><tr><td style="text-align:left">Observations</td><td>277</td></tr>
+<tr><td style="text-align:left">R<sup>2</sup></td><td>0.001</td></tr>
+<tr><td style="text-align:left">Adjusted R<sup>2</sup></td><td>-0.003</td></tr>
+<tr><td style="text-align:left">Residual Std. Error</td><td>0.146 (df = 275)</td></tr>
+<tr><td style="text-align:left">F Statistic</td><td>0.252 (df = 1; 275)</td></tr>
+<tr><td colspan="2" style="border-bottom: 1px solid black"></td></tr><tr><td style="text-align:left"><em>Note:</em></td><td style="text-align:right"><sup>*</sup>p<0.1; <sup>**</sup>p<0.05; <sup>***</sup>p<0.01</td></tr>
+</table>
+
+
+<br>
+<br>
+<br>
