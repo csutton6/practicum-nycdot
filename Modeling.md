@@ -106,7 +106,7 @@ March2July_M <- March2July_M %>%
 
 <br>
 
-#### March to July
+#### March to December, 2018
 
 <br>
 
@@ -136,16 +136,6 @@ reg_M <- lm(count ~ bikelane, data=March2July_M)
 </table>
 
 <br>
-<br>
-About the % of trips uses bikelanes:
-<br>
-
-```r
-
-nrow(March2July_M %>% filter(bikelane == "yes")) / nrow(March2July_M)
-[1] 0.9604328
-```
-
 <br>
 <br>
 
@@ -191,19 +181,8 @@ reg_Q <- lm(count ~ bikelane, data=March2July_Q)
 
 <br>
 <br>
-
-About the % of trips use bikelanes:
 <br>
 
-```r
-nrow(March2July_Q %>% filter(bikelane == "yes")) / nrow(March2July_Q)
-[1] 0.7688982
-```
-
-<br>
-
-<br>
-<br>
 
 **Brooklyn**
 
@@ -235,26 +214,6 @@ reg_Bk <- lm(Count ~ bikeline, data=info.y18_Bk)
 
 <br>
 <br>
-
-About the % of trips uses bikelanes:
 <br>
-
-```r
-nrow(March2July_Q %>% filter(bikelane == "yes")) / nrow(March2July_Q)
-[1] 0.9476969
-```
-
-<br>
-
-
-
-
-
-
-
-<br>
-<br>
-<br>
-Questions:
 
 
