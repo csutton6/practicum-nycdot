@@ -125,16 +125,15 @@ reg_M <- lm(Count ~ bikeline, data=info.y18_M)
 <tr><td colspan="2" style="border-bottom: 1px solid black"></td></tr><tr><td style="text-align:left"></td><td><em>Dependent variable:</em></td></tr>
 <tr><td></td><td colspan="1" style="border-bottom: 1px solid black"></td></tr>
 <tr><td style="text-align:left"></td><td>Count</td></tr>
-<tr><td colspan="2" style="border-bottom: 1px solid black"></td></tr><tr><td style="text-align:left">bikelineyes</td><td>209.166<sup>***</sup> (4.894)</td></tr>
-<tr><td style="text-align:left">Constant</td><td>62.276<sup>***</sup> (1.802)</td></tr>
-<tr><td colspan="2" style="border-bottom: 1px solid black"></td></tr><tr><td style="text-align:left">Observations</td><td>18,149</td></tr>
-<tr><td style="text-align:left">R<sup>2</sup></td><td>0.091</td></tr>
-<tr><td style="text-align:left">Adjusted R<sup>2</sup></td><td>0.091</td></tr>
-<tr><td style="text-align:left">Residual Std. Error</td><td>225.692 (df = 18147)</td></tr>
-<tr><td style="text-align:left">F Statistic</td><td>1,826.534<sup>***</sup> (df = 1; 18147)</td></tr>
+<tr><td colspan="2" style="border-bottom: 1px solid black"></td></tr><tr><td style="text-align:left">bikelineyes</td><td>364.436<sup>***</sup> (9.270)</td></tr>
+<tr><td style="text-align:left">Constant</td><td>222.147<sup>***</sup> (3.595)</td></tr>
+<tr><td colspan="2" style="border-bottom: 1px solid black"></td></tr><tr><td style="text-align:left">Observations</td><td>25,613</td></tr>
+<tr><td style="text-align:left">R<sup>2</sup></td><td>0.057</td></tr>
+<tr><td style="text-align:left">Adjusted R<sup>2</sup></td><td>0.057</td></tr>
+<tr><td style="text-align:left">Residual Std. Error</td><td>530.316 (df = 25611)</td></tr>
+<tr><td style="text-align:left">F Statistic</td><td>1,545.528<sup>***</sup> (df = 1; 25611)</td></tr>
 <tr><td colspan="2" style="border-bottom: 1px solid black"></td></tr><tr><td style="text-align:left"><em>Note:</em></td><td style="text-align:right"><sup>*</sup>p<0.1; <sup>**</sup>p<0.05; <sup>***</sup>p<0.01</td></tr>
 </table>
-
 <br>
 <br>
 <br>
