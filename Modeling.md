@@ -141,11 +141,29 @@ reg_M <- lm(Count ~ bikeline, data=info.y18_M)
 **Bronx**
 
 <br>
-There are only 10 trips from March to July inside Bronx. <b>None</b> of them uses bikelanes.
+
+```r
+reg_Br <- lm(Count ~ bikeline, data=info.y18_Br)
+```
+
+<br>
+<table style="text-align:center"><caption><strong>Regression results</strong></caption>
+<tr><td colspan="2" style="border-bottom: 1px solid black"></td></tr><tr><td style="text-align:left"></td><td><em>Dependent variable:</em></td></tr>
+<tr><td></td><td colspan="1" style="border-bottom: 1px solid black"></td></tr>
+<tr><td style="text-align:left"></td><td>Count</td></tr>
+<tr><td colspan="2" style="border-bottom: 1px solid black"></td></tr><tr><td style="text-align:left">bikelineyes</td><td>0.013 (0.084)</td></tr>
+<tr><td style="text-align:left">Constant</td><td>1.555<sup>***</sup> (0.024)</td></tr>
+<tr><td colspan="2" style="border-bottom: 1px solid black"></td></tr><tr><td style="text-align:left">Observations</td><td>3,147</td></tr>
+<tr><td style="text-align:left">R<sup>2</sup></td><td>0.00001</td></tr>
+<tr><td style="text-align:left">Adjusted R<sup>2</sup></td><td>-0.0003</td></tr>
+<tr><td style="text-align:left">Residual Std. Error</td><td>1.280 (df = 3145)</td></tr>
+<tr><td style="text-align:left">F Statistic</td><td>0.023 (df = 1; 3145)</td></tr>
+<tr><td colspan="2" style="border-bottom: 1px solid black"></td></tr><tr><td style="text-align:left"><em>Note:</em></td><td style="text-align:right"><sup>*</sup>p<0.1; <sup>**</sup>p<0.05; <sup>***</sup>p<0.01</td></tr>
+</table>
 
 
 
-
+<br>
 <br>
 <br>
 
