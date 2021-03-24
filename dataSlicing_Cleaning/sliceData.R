@@ -8,8 +8,12 @@ library(lubridate)
 library(data.table)
 library(RPostgreSQL)
 
+setwd('C:/Users/katee/Box Sync/Practicum/shp/')
+
 #Connect to SQLite
-riderdata <- "E:/NYCDOT/RideInsights_trim/RideInsights_trim.db"
+#riderdata <- "E:/NYCDOT/RideInsights_trim/RideInsights_trim.db"
+riderdata <- 'RideInsights_trim.db'
+
 
 sqlite.driver <- dbDriver("SQLite")
 
@@ -163,3 +167,94 @@ ride2018Dec_sf <- st_as_sfc(lapply(ride2018Dec$rental_path, sf:::hex_to_raw), EW
   cbind(., ride2018Dec %>% select(-rental_path))
 
 st_write(ride2018Dec_sf, "ride2018Dec_sf.shp", driver = "ESRI Shapefile")
+
+#year 2020
+ride2020$rmonth <- substr(ride2020$rdate, 6, 7)
+
+ride2020Aug <- ride2020 %>%
+  filter(rmonth == "08")
+
+ride2020Aug.sf <- st_as_sfc(lapply(ride2020Aug$rental_path, sf:::hex_to_raw), EWKB = TRUE) %>%
+  cbind(., ride2020Aug %>% select(-rental_path))
+
+st_write(ride2020Aug.sf, "ride2020Aug_sf.shp", driver = "ESRI Shapefile")
+
+testAug2020 <- st_read("ride2020Aug_sf.shp")
+#back to doing things
+
+ride2020Sep <- ride2020 %>%
+  filter(rmonth == "09")
+
+ride2020Sep.sf <- st_as_sfc(lapply(ride2020Sep$rental_path, sf:::hex_to_raw), EWKB = TRUE) %>%
+  cbind(., ride2020Sep %>% select(-rental_path))
+
+st_write(ride2020Sep.sf, "ride2020Sep_sf.shp", driver = "ESRI Shapefile")
+
+#october
+ride2020Oct <- ride2020 %>%
+  filter(rmonth == "10")
+
+ride2020Oct.sf <- st_as_sfc(lapply(ride2020Oct$rental_path, sf:::hex_to_raw), EWKB = TRUE) %>%
+  cbind(., ride2020Oct %>% select(-rental_path))
+
+st_write(ride2020Oct.sf, "ride2020Oct_sf.shp", driver = "ESRI Shapefile")
+
+#2019
+ride2019$rmonth <- substr(ride2019$rdate, 6, 7)
+
+#May
+ride2019May <- ride2019 %>%
+  filter(rmonth == "05")
+
+ride2019May.sf <- st_as_sfc(lapply(ride2019May$rental_path, sf:::hex_to_raw), EWKB = TRUE) %>%
+  cbind(., ride2019May %>% select(-rental_path))
+
+st_write(ride2019May.sf, "ride2019May_sf.shp", driver = "ESRI Shapefile")
+
+#June
+ride2019June <- ride2019 %>%
+  filter(rmonth == "06")
+
+ride2019June.sf <- st_as_sfc(lapply(ride2019June$rental_path, sf:::hex_to_raw), EWKB = TRUE) %>%
+  cbind(., ride2019June %>% select(-rental_path))
+
+st_write(ride2019June.sf, "ride2019June_sf.shp", driver = "ESRI Shapefile")
+
+
+#July
+ride2019July <- ride2019 %>%
+  filter(rmonth == "07")
+
+ride2019July.sf <- st_as_sfc(lapply(ride2019July$rental_path, sf:::hex_to_raw), EWKB = TRUE) %>%
+  cbind(., ride2019July %>% select(-rental_path))
+
+st_write(ride2019July.sf, "ride2019July_sf.shp", driver = "ESRI Shapefile")
+
+
+#August
+ride2019Aug <- ride2019 %>%
+  filter(rmonth == "08")
+
+ride2019Aug.sf <- st_as_sfc(lapply(ride2019Aug$rental_path, sf:::hex_to_raw), EWKB = TRUE) %>%
+  cbind(., ride2019Aug %>% select(-rental_path))
+
+st_write(ride2019Aug.sf, "ride2019Aug_sf.shp", driver = "ESRI Shapefile")
+
+#October
+ride2019Oct <- ride2019 %>%
+  filter(rmonth == "10")
+
+ride2019Oct.sf <- st_as_sfc(lapply(ride2019Oct$rental_path, sf:::hex_to_raw), EWKB = TRUE) %>%
+  cbind(., ride2019Oct %>% select(-rental_path))
+
+st_write(ride2019Oct.sf, "ride2019Oct_sf.shp", driver = "ESRI Shapefile")
+
+#November
+ride2019Nov <- ride2019 %>%
+  filter(rmonth == "11")
+
+ride2019Nov.sf <- st_as_sfc(lapply(ride2019Nov$rental_path, sf:::hex_to_raw), EWKB = TRUE) %>%
+  cbind(., ride2019Nov %>% select(-rental_path))
+
+st_write(ride2019Nov.sf, "ride2019Nov_sf.shp", driver = "ESRI Shapefile")
+

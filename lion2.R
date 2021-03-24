@@ -1,7 +1,8 @@
 setwd('C:/Users/katee/Box Sync/Practicum/shp/')
 
 install.packages("kableExtra")
-
+install.packages('RJSONIO')
+install.packages('gdata')
 
 library(sf)
 library(tidyverse)
@@ -10,6 +11,8 @@ library(mapview)
 library(RSocrata)
 library(ggthemes)
 library(kableExtra)
+library(RJSONIO)
+library(gdata)
 
 bikelane_17d<- st_read('bikelane_17d.shp')
 bikelane_20d<- st_read('bikelane_20d.shp')
@@ -316,5 +319,51 @@ new_20_protect_table<- new_20_clean%>%
   kable_styling()
 new_20_protect_table
 
+
+#citibike
+station_info<- fromJSON('https://gbfs.citibikenyc.com/gbfs/en/station_information.json')
+stations<- station_info[['data']]
+
+grabInfo<-function(var){
+  print(paste("Variable", var, sep=" "))  
+  sapply(stations, function(x) returnData(x, var)) 
+  
+  
+}
+
+
+returnData<-function(x, var){
+  if(!is.null( x[[var]])){
+    return( trim(x[[var]]))
+  }else{
+    return(NA)
+  }
+}
+
+stationDataDF<-data.frame(sapply(1:22, grabInfo), stringsAsFactors=FALSE)
+
+#with geo
+grabGeoInfo<-function(val){
+  
+  l<- length(stations[[1]][[val]])
+  tmp<-lapply(1:l, function(y) 
+    
+    sapply(stations, function(x){
+      
+      if(!is.null(x[[val]][[y]])){
+        return(x[[val]][[y]])
+      }else{
+        return(NA)
+      }
+      
+    })     
+  )
+}
+
+
+stationDataGeo<-grabGeoInfo(23)
+stationDataGeo<-data.frame(do.call("cbind", stationDataGeo), stringsAsFactors=FALSE)
+
+stationDataDF<-cbind(stationDataDF, stationDataGeo)
 
 
