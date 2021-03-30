@@ -261,3 +261,15 @@ reg_S <- lm(Count ~ bikeline, data=info.y18_S)
 <br>
 <br>
 <br>
+
+
+### Feature Engineering
+
+<br>
+
+Table
+<img src="https://github.com/kateesutt/practicum-nycdot/blob/main/images/feature_draft2.png">
+
+<br>
+Result
+<img src="https://github.com/kateesutt/practicum-nycdot/blob/main/images/feature_draft.png">
