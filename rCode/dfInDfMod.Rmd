@@ -1,0 +1,129 @@
+---
+title: "Modeling"
+author: "Xintian Stella Li"
+date: "3/20/2021"
+output: html_document
+
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_knit$set(root.dir = 'C:/Users/xinti/Box/MUSA_800_Practicum/Data')
+```
+
+
+
+```{r read in data}
+# boroughs
+borough <- st_read("OtherData/BoroughBoundaries/Boroughs.shp") %>% st_transform(crs=4326)
+brooklyn <- borough %>% filter(boro_name == "Brooklyn") %>% st_transform(crs=4326)
+brooklyn_L <- st_cast(brooklyn,"MULTILINESTRING")
+chelsea <- st_read("OtherData/Chelsea_for7thAve/Chealse.shp") %>% st_transform(crs=4326)
+chelsea_L <- st_cast(chelsea,"MULTILINESTRING")
+# ridership in August 2019
+Aug2019 <- st_read("BikeTrips/slicedData/ride2019Aug/ride2019Aug_sf.shp") %>% st_transform(crs = 4326)
+# ridership in August 2020/
+Aug2020 <- st_read("BikeTrips/slicedData/ride2020Aug/ride2020Aug_sf.shp") %>% st_transform(crs = 4326)
+# newBike lanes added in 2020
+newBike2020 <- st_read("Infrastructure/bikeDiff/bikelane_1920Diff_2/newBikelane_2020.shp") %>% st_transform(crs = 4326)
+# road infrastructure
+roads <- st_read("OtherData/roadBuffer/lion_buffer15/lion_buffer15.shp") %>% st_transform(crs = 4326)
+roads15 <- roads %>% select(Street,StreetCode,SegmentID)
+# length(unique(roads15$SegmentID))
+# delete dupilicated rows
+road15 <- distinct(roads15,SegmentID,.keep_all = T)
+# test <- roads15[!duplicated(roads15),]
+newBike <- distinct(newBike2020,SegmentID_,.keep_all = T)
+rm(roads,roads15)
+rm(newBike2020)
+```
+
+```{r}
+# join the new bike lanes to the road infrastructure
+newBike <- newBike %>% mutate(isNewBikeLane = 1) %>% select(-Street_1,-StreetCo_1) %>% st_drop_geometry()
+road_info <- merge(road15,newBike,by.x = "SegmentID",by.y = "SegmentID_" ,all.x = T)%>% mutate_all(~replace(.,is.na(.),0))
+table(road_info$isNewBikeLane)
+```
+```{r }
+road_Broo <- road_info[brooklyn,] 
+rm(road15)
+
+```
+```{r clip trip and clean}
+clipToBoundary <- function(outline,polygon,trip){
+  outliers <- trip[outline,]
+  clippedData <- trip[polygon,] %>% filter(!(id %in% outliers$id))
+  return(clippedData)
+}
+
+trip_Broo_198<- clipToBoundary(brooklyn_L,brooklyn,Aug2019) %>% st_transform(crs=3857)
+trip_Broo_208<- clipToBoundary(brooklyn_L,brooklyn,Aug2020) %>% st_transform(crs=3857)
+
+st_write(trip_Broo_198,"trip_Broo_198.shp")
+st_write(trip_Broo_208,"trip_Broo_208.shp")
+```
+```{r distribte bike trip to roads}
+pnt_208 <- st_read("BikeTrips/pointData/Broo_208.shp") %>% st_transform(crs =4326)
+pnt_198 <- st_read("BikeTrips/pointData/Broo_198.shp") %>% st_transform(crs =4326)
+
+clpnt_208 <- pnt_208[road_Broo,] %>% mutate(pnt_id = seq.int(nrow(.)))%>% st_transform(crs = 4326) %>% st_join(.,road_Broo,join = st_intersects, left = T)
+clpnt_198 <- pnt_198[road_Broo,] %>% mutate(pnt_id = seq.int(nrow(.)))%>% st_transform(crs = 4326) %>% st_join(.,road_Broo,join = st_intersects, left = T)
+rm(pnt_198,pnt_208)
+```
+```{r}
+countTrip <- function(pnt){
+  tripCount <- pnt %>% 
+    as.data.frame() %>% 
+    select(-geometry) %>% 
+    group_by(id_1,SegmentID) %>% 
+    summarise(pntCount = n()) %>% 
+    group_by(SegmentID) %>% 
+    summarise(tripCount = n())
+  return(tripCount)
+}
+
+road_trip208 <- countTrip(clpnt_208)
+road_trip198 <- countTrip(clpnt_198)
+
+road_Broo1 <- road_Broo %>% 
+  merge(.,road_trip208,by.x= "SegmentID",by.y ="SegmentID",all.x = T) %>% 
+  rename(trip20=tripCount) %>%
+  merge(.,road_trip198,by = "SegmentID", all.x = T) %>%
+  rename(trip19=tripCount) %>% 
+  mutate_all(~replace(.,is.na(.),0)) %>% 
+  mutate(dif1920 = trip19-trip20) 
+
+road_Broo1$bikeYN <- case_when(
+  road_Broo1$isNewBikeLane == 0 ~"N",
+  road_Broo1$isNewBikeLane == 1 ~"Y"
+)
+
+```
+```{r do a linear regression}
+reg <- lm(dif1920 ~ bikeYN, data = road_Broo1 %>% st_drop_geometry())
+summary(reg)
+```
+
+```{r line to point in r}
+# take chelsea as an example first
+# take August 1st as an example first
+# generate sample point from bike trip line
+# spatial join
+# rideTest <- Aug2020 %>% filter(rdate == "2020-08-01")
+# clipToBoundary <- function(outline,polygon,trip){
+#   outliers <- trip[outline,]
+#   clippedData <- trip[polygon,] %>% filter(!(id %in% outliers$id))
+#   return(clippedData)
+# }
+# rideChel <- clipToBoundary(chelsea_L,chelsea,rideTest)
+# pnts_chel <- st_line_sample(st_transform(rideChel,3857),density = 1/150)
+# test <- st_cast(pnts_chel,"POINT") %>% st_sf() %>% st_transform(crs = 4326)
+# test2 <- st_join(test,rideChel,join = st_intersects, left = T)
+
+```
+```{r piazza test}
+# route <- st_read("sample/sample.shp")
+# multipnts <- st_line_sample(st_transform(route,3857),density = 1/150)
+# pnts <- st_cast(multipnts,"POINT") %>% st_sf() %>% st_transform(crs = 4326)
+# pnts2 <- st_join(pnts,route,join = st_intersects, left = T)
+```
