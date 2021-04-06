@@ -263,13 +263,23 @@ reg_S <- lm(Count ~ bikeline, data=info.y18_S)
 <br>
 
 
-### Feature Engineering
+### Feature Engineering and Models
 
 <br>
 
-Table
+The following table is a sample that demonstrates how our data look like when we are running models.
 <img src="https://github.com/kateesutt/practicum-nycdot/blob/main/images/feature_draft2.png">
 
+
 <br>
-Result
-<img src="https://github.com/kateesutt/practicum-nycdot/blob/main/images/feature_draft.png">
+
+#### Features
+<ul>
+  <li>Whether the road is bikelane or not</li>
+  <li>Distance to closest bikelanes</li>
+  <li>The number of trips of the 1st closest bikelane</li>
+  <li>The number of trips of the 2nd closest bikelane</li>
+  <li>The number of trips of the 3rd closest bikelane</li>
+  <li>The number of bike trips in each neighborhood</li>
+  <li>The sum of the number of trips in the 1st and 2nd cloest roads</li>
+</ul>
