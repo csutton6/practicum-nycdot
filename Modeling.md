@@ -324,7 +324,9 @@ The following table is a sample that demonstrates how our data look like when we
 #### Question: Neighborhood Effect?
 
 <br>
+
 Do not use C2 feature (the sum of trips in 1st and 2nd closest **roads**):
+
 <br>
 
 
