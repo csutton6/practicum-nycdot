@@ -324,6 +324,8 @@ The following table is a sample that demonstrates how our data look like when we
 #### Question: Neighborhood Effect?
 
 <br>
+Do not use C2 feature (the sum of trips in 1st and 2nd closest **roads**):
+<br>
 
 
 <table style="text-align:center"><caption><strong>Regression results</strong></caption>
@@ -346,3 +348,38 @@ The following table is a sample that demonstrates how our data look like when we
 <tr><td style="text-align:left">F Statistic</td><td>1,126.758<sup>***</sup> (df = 8; 45260)</td></tr>
 <tr><td colspan="2" style="border-bottom: 1px solid black"></td></tr><tr><td style="text-align:left"><em>Note:</em></td><td style="text-align:right"><sup>*</sup>p<0.1; <sup>**</sup>p<0.05; <sup>***</sup>p<0.01</td></tr>
 </table>
+
+<br>
+<br>
+
+#### Modeling in different borough
+
+<br>
+
+#### Manhattan
+
+<br>
+<table style="text-align:center"><caption><strong>Regression results</strong></caption>
+<tr><td colspan="2" style="border-bottom: 1px solid black"></td></tr><tr><td style="text-align:left"></td><td><em>Dependent variable:</em></td></tr>
+<tr><td></td><td colspan="1" style="border-bottom: 1px solid black"></td></tr>
+<tr><td style="text-align:left"></td><td>Count</td></tr>
+<tr><td colspan="2" style="border-bottom: 1px solid black"></td></tr><tr><td style="text-align:left">bikelineyes</td><td>0.248 (5.321)</td></tr>
+<tr><td style="text-align:left">dist.lane</td><td>0.0003<sup>**</sup> (0.0002)</td></tr>
+<tr><td style="text-align:left">protectedyes</td><td>0.916 (5.322)</td></tr>
+<tr><td style="text-align:left">unprotectedyes</td><td>-0.365 (5.322)</td></tr>
+<tr><td style="text-align:left">n1Count</td><td>0.007<sup>***</sup> (0.002)</td></tr>
+<tr><td style="text-align:left">n2Count</td><td>-0.012<sup>***</sup> (0.002)</td></tr>
+<tr><td style="text-align:left">n3Count</td><td>0.002 (0.002)</td></tr>
+<tr><td style="text-align:left">nhCount</td><td>-0.00001 (0.00001)</td></tr>
+<tr><td style="text-align:left">C2</td><td>0.503<sup>***</sup> (0.001)</td></tr>
+<tr><td style="text-align:left">Constant</td><td>-0.132 (0.108)</td></tr>
+<tr><td colspan="2" style="border-bottom: 1px solid black"></td></tr><tr><td style="text-align:left">Observations</td><td>26,953</td></tr>
+<tr><td style="text-align:left">R<sup>2</sup></td><td>0.916</td></tr>
+<tr><td style="text-align:left">Adjusted R<sup>2</sup></td><td>0.916</td></tr>
+<tr><td style="text-align:left">Residual Std. Error</td><td>7.523 (df = 26943)</td></tr>
+<tr><td style="text-align:left">F Statistic</td><td>32,730.640<sup>***</sup> (df = 9; 26943)</td></tr>
+<tr><td colspan="2" style="border-bottom: 1px solid black"></td></tr><tr><td style="text-align:left"><em>Note:</em></td><td style="text-align:right"><sup>*</sup>p<0.1; <sup>**</sup>p<0.05; <sup>***</sup>p<0.01</td></tr>
+</table>
+
+<br>
+
