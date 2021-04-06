@@ -276,8 +276,6 @@ The following table is a sample that demonstrates how our data look like when we
 #### Features
 <ul>
   <li>Whether the road is bikelane or not</li>
-  <li>Whether the road is protected bikelane</li>
-  <li>Whether the road is unprotected bikelane</li>
   <li>Distance to closest bikelanes</li>
   <li>The number of trips of the 1st closest bikelane</li>
   <li>The number of trips of the 2nd closest bikelane</li>
@@ -299,21 +297,19 @@ The following table is a sample that demonstrates how our data look like when we
 <tr><td colspan="2" style="border-bottom: 1px solid black"></td></tr><tr><td style="text-align:left"></td><td><em>Dependent variable:</em></td></tr>
 <tr><td></td><td colspan="1" style="border-bottom: 1px solid black"></td></tr>
 <tr><td style="text-align:left"></td><td>Count</td></tr>
-<tr><td colspan="2" style="border-bottom: 1px solid black"></td></tr><tr><td style="text-align:left">bikelineyes</td><td>0.078 (1.274)</td></tr>
-<tr><td style="text-align:left">dist.lane</td><td>0.0001<sup>*</sup> (0.0001)</td></tr>
-<tr><td style="text-align:left">protectedyes</td><td>0.979 (1.276)</td></tr>
-<tr><td style="text-align:left">unprotectedyes</td><td>0.036 (1.276)</td></tr>
+<tr><td colspan="2" style="border-bottom: 1px solid black"></td></tr><tr><td style="text-align:left">bikelineyes</td><td>0.538<sup>***</sup> (0.078)</td></tr>
+<tr><td style="text-align:left">dist.lane</td><td>0.0002<sup>**</sup> (0.0001)</td></tr>
 <tr><td style="text-align:left">n1Count</td><td>0.010<sup>***</sup> (0.001)</td></tr>
 <tr><td style="text-align:left">n2Count</td><td>-0.014<sup>***</sup> (0.001)</td></tr>
 <tr><td style="text-align:left">n3Count</td><td>0.002 (0.001)</td></tr>
-<tr><td style="text-align:left">nhCount</td><td>-0.00001<sup>*</sup> (0.00000)</td></tr>
+<tr><td style="text-align:left">nhCount</td><td>-0.00000 (0.00000)</td></tr>
 <tr><td style="text-align:left">C2</td><td>0.502<sup>***</sup> (0.001)</td></tr>
-<tr><td style="text-align:left">Constant</td><td>-0.120<sup>**</sup> (0.061)</td></tr>
+<tr><td style="text-align:left">Constant</td><td>-0.166<sup>***</sup> (0.061)</td></tr>
 <tr><td colspan="2" style="border-bottom: 1px solid black"></td></tr><tr><td style="text-align:left">Observations</td><td>45,269</td></tr>
 <tr><td style="text-align:left">R<sup>2</sup></td><td>0.916</td></tr>
 <tr><td style="text-align:left">Adjusted R<sup>2</sup></td><td>0.916</td></tr>
-<tr><td style="text-align:left">Residual Std. Error</td><td>6.234 (df = 45259)</td></tr>
-<tr><td style="text-align:left">F Statistic</td><td>54,953.430<sup>***</sup> (df = 9; 45259)</td></tr>
+<tr><td style="text-align:left">Residual Std. Error</td><td>6.237 (df = 45261)</td></tr>
+<tr><td style="text-align:left">F Statistic</td><td>70,567.220<sup>***</sup> (df = 7; 45261)</td></tr>
 <tr><td colspan="2" style="border-bottom: 1px solid black"></td></tr><tr><td style="text-align:left"><em>Note:</em></td><td style="text-align:right"><sup>*</sup>p<0.1; <sup>**</sup>p<0.05; <sup>***</sup>p<0.01</td></tr>
 </table>
 
@@ -334,20 +330,18 @@ Do not use C2 feature (the sum of trips in 1st and 2nd closest **roads**):
 <tr><td colspan="2" style="border-bottom: 1px solid black"></td></tr><tr><td style="text-align:left"></td><td><em>Dependent variable:</em></td></tr>
 <tr><td></td><td colspan="1" style="border-bottom: 1px solid black"></td></tr>
 <tr><td style="text-align:left"></td><td>Count</td></tr>
-<tr><td colspan="2" style="border-bottom: 1px solid black"></td></tr><tr><td style="text-align:left">bikelineyes</td><td>17.891<sup>***</sup> (4.016)</td></tr>
+<tr><td colspan="2" style="border-bottom: 1px solid black"></td></tr><tr><td style="text-align:left">bikelineyes</td><td>5.907<sup>***</sup> (0.246)</td></tr>
 <tr><td style="text-align:left">dist.lane</td><td>-0.002<sup>***</sup> (0.0002)</td></tr>
-<tr><td style="text-align:left">protectedyes</td><td>-9.019<sup>**</sup> (4.025)</td></tr>
-<tr><td style="text-align:left">unprotectedyes</td><td>-14.516<sup>***</sup> (4.023)</td></tr>
-<tr><td style="text-align:left">n1Count</td><td>0.233<sup>***</sup> (0.004)</td></tr>
+<tr><td style="text-align:left">n1Count</td><td>0.234<sup>***</sup> (0.004)</td></tr>
 <tr><td style="text-align:left">n2Count</td><td>0.059<sup>***</sup> (0.004)</td></tr>
-<tr><td style="text-align:left">n3Count</td><td>0.012<sup>***</sup> (0.004)</td></tr>
+<tr><td style="text-align:left">n3Count</td><td>0.013<sup>***</sup> (0.004)</td></tr>
 <tr><td style="text-align:left">nhCount</td><td>0.0002<sup>***</sup> (0.00001)</td></tr>
-<tr><td style="text-align:left">Constant</td><td>1.633<sup>***</sup> (0.193)</td></tr>
+<tr><td style="text-align:left">Constant</td><td>1.371<sup>***</sup> (0.192)</td></tr>
 <tr><td colspan="2" style="border-bottom: 1px solid black"></td></tr><tr><td style="text-align:left">Observations</td><td>45,269</td></tr>
-<tr><td style="text-align:left">R<sup>2</sup></td><td>0.166</td></tr>
-<tr><td style="text-align:left">Adjusted R<sup>2</sup></td><td>0.166</td></tr>
-<tr><td style="text-align:left">Residual Std. Error</td><td>19.661 (df = 45260)</td></tr>
-<tr><td style="text-align:left">F Statistic</td><td>1,126.758<sup>***</sup> (df = 8; 45260)</td></tr>
+<tr><td style="text-align:left">R<sup>2</sup></td><td>0.163</td></tr>
+<tr><td style="text-align:left">Adjusted R<sup>2</sup></td><td>0.162</td></tr>
+<tr><td style="text-align:left">Residual Std. Error</td><td>19.701 (df = 45262)</td></tr>
+<tr><td style="text-align:left">F Statistic</td><td>1,464.535<sup>***</sup> (df = 6; 45262)</td></tr>
 <tr><td colspan="2" style="border-bottom: 1px solid black"></td></tr><tr><td style="text-align:left"><em>Note:</em></td><td style="text-align:right"><sup>*</sup>p<0.1; <sup>**</sup>p<0.05; <sup>***</sup>p<0.01</td></tr>
 </table>
 
