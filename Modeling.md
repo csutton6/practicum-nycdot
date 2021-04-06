@@ -276,12 +276,12 @@ The following table is a sample that demonstrates how our data look like when we
 #### Features
 <ul>
   <li>Whether the road is bikelane or not</li>
-  <li>Distance to closest bikelanes</li>
-  <li>The number of trips of the 1st closest bikelane</li>
-  <li>The number of trips of the 2nd closest bikelane</li>
-  <li>The number of trips of the 3rd closest bikelane</li>
-  <li>The number of bike trips in each neighborhood</li>
-  <li>The sum of the number of trips in the 1st and 2nd cloest roads</li>
+  <li>Distance to closest bikelanes(dist.lane)</li>
+  <li>The number of trips of the 1st closest bikelane(n1Count)</li>
+  <li>The number of trips of the 2nd closest bikelane(n2Count)</li>
+  <li>The number of trips of the 3rd closest bikelane(n3Count)</li>
+  <li>The number of bike trips in each neighborhood(nhCount)</li>
+  <li>The sum of the number of trips in the 1st and 2nd cloest roads(C2)</li>
 </ul>
 
 
