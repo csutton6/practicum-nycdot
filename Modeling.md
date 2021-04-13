@@ -402,14 +402,14 @@ What is the spatial relationship? <br>
 <br>
 
 How do errors compare to spatial lag? <br>
-![erros and lag](images/error_lag_plot.png)
+![erros and lag](images/error_lag_plot_2.png)
 <br>
 
 Mapping Residuals <br>
-![med res](images/res_over10.png)
+![med res](images/res_over10_2.png)
 <br>
 
-![high res](images/res_over100.png)
+![high res](images/res_over100_large.png)
 
 
 
