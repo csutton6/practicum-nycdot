@@ -378,3 +378,19 @@ Do not use C2 feature (the sum of trips in 1st and 2nd closest **roads**):
 
 <br>
 
+#### Exploring Model Errors
+Two weeks split into 25% test/75% train. Could switch to train on two week's of data, test on two other weeks. 
+
+Results from Training Set
+![model results](images/reg_train.PNG)
+
+Comparing MAE and MAPE
+|     |MAE (Trip Count)| MAPE |
+|-----|----------------|------|
+|train|.949|25%|
+|test|1.001|28%|
+
+
+
+
+
