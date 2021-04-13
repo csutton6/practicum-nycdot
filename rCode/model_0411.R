@@ -301,8 +301,18 @@ ggplot()+
 ggplot()+
   geom_sf(data=info.Aug, aes(color=res_reg1))
 
+#select only those with higher value residuals
+high_err<- subset(info.Aug, res_reg1>10)
+
+ggplot()+
+  geom_sf(data=high_err, aes(color=res_reg1), size = 1.2)
+
 ggplot(info.Aug, aes(x=res_reg1))+
-  geom_density()
+  geom_density()+
+  labs(title='Density of Residuals',
+       xlab='Residual')
+
+hist(info.Aug$res_reg1, col='skyblue3', breaks = 50, main='Histogram of Residuals')
 
 
 #### more detailed modeling - train/test and errors ####
@@ -401,14 +411,6 @@ colnames(table4.1.2) <- c("MAE", "MAPE")
 # show table
 table4.1.2 %>% kable(caption = "Table 4.1.2 - Training and Testing MAE and MAPE")
 
-#working with the errors
-rmse.train <- caret::MAE(reg_all_predict_train, train$Count)
-
-rmse.test  <- caret::MAE(reg_all_predict, test$Count)
-
-miami_test <- cbind(test, reg_all_predict)
-miami_training <- cbind(train, reg_all_predict_train)
-
 # true value vs. predicted value 
 preds.train <- data.frame(pred   = reg_all_predict_train,
                           actual = train$Count,
@@ -466,16 +468,19 @@ spatialWeights.test <- nb2listw(neighborList.test, style="W")
 test$lagCountError <- lag.listw(spatialWeights.test, test$Count.AbsError)
 
 #spatial lag of count
-ggplot(info.Aug, aes(x=lagCount, y=Count)) +
+count_lag_plot <- ggplot(info.Aug, aes(x=lagCount, y=Count,  label=Street)) +
   geom_point(colour = "#FA7800") +
   geom_smooth(method = "lm", se = FALSE, colour = "#25CB10") +
   labs(title = "Count as a function of the spatial lag of count",
        caption = "count as a function of the spatial lag of count",
        x = "Spatial lag of count (Mean count of 5 nearest neighbors)",
-       y = "Trip Count") 
+       y = "Trip Count")
+count_lag_plot
+
+ggplotly(count_lag_plot)
 
 #spatial lag vs error
-error_lag_plot<- ggplot(test, aes(x=lagCountError, y=Count, label=ntaname)) +
+error_lag_plot<- ggplot(test, aes(x=lagCountError, y=Count, label=Street)) +
   geom_point(colour = "#FA7800") +
   geom_smooth(method = "lm", se = FALSE, colour = "#25CB10") +
   labs(title = "Error as a function of the spatial lag of count",
@@ -484,10 +489,28 @@ error_lag_plot<- ggplot(test, aes(x=lagCountError, y=Count, label=ntaname)) +
        y = "Trip Count")
 error_lag_plot
 
-glimpse(test)
-ggplotly(error_lag_plot,
-         tooltip=c('Street', 'bikeline', 'Count', 'lagCountError', 'ntaname'))
-
 ggplotly(error_lag_plot)
 
+#mapping errors
+glimpse(test)
+high_err_test<- subset(test, test$Count.AbsError>100)
+high_err_train<- subset(train, Count.AbsError>100)
 
+med_err_test<- subset(test, test$Count.AbsError>10)
+med_err_train<- subset(train, Count.AbsError>10)
+
+boroughs_clip<-st_intersection(borough, extent)
+
+ggplot()+
+  geom_sf(data=boroughs_clip, fill='white', color='white')+
+  geom_sf(data=high_err_test, aes(color=Count.Error), size=1.2)+
+  geom_sf(data=high_err_train, aes(color=Count.Error), size =1.2)+
+  scale_color_continuous(type='viridis')+
+  labs(title='Residuals Larger than 100')
+
+ggplot()+
+  geom_sf(data=boroughs_clip, fill='white', color='white')+
+  geom_sf(data=med_err_test, aes(color=Count.Error), size=1.2)+
+  geom_sf(data=med_err_train, aes(color=Count.Error), size =1.2)+
+  scale_color_continuous(type='viridis')+
+  labs(title='Residuals Larger than 10')
