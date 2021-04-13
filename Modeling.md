@@ -379,7 +379,7 @@ Do not use C2 feature (the sum of trips in 1st and 2nd closest **roads**):
 <br>
 
 ## Exploring Model Errors <br>
-Two weeks split into 25% test/75% train. Could switch to train on two week's of data, test on two other weeks. 
+Data: Two weeks split into 25% test/75% train. Could switch to train on two week's of data, test on two other weeks. 
 
 Results from Training Set <br>
 ![model results](images/reg_train.PNG)
@@ -390,7 +390,23 @@ Comparing MAE and MAPE<br>
 |train|.949|25%|
 |test|1.001|28%|
 
+![residuals plot](images/residuals_hist.png)
+<br>
 
+Predicted vs Observed
+![pred vs obs](images/predvsobs.png)
+
+What is the spatial relationship? <br>
+![spatial relationship](images/count_lag.png)
+
+How do errors compare to spatial lag? <br>
+![erros and lag](images/error_lag_plot.png)
+
+Mapping Residuals
+![med res](images/res_over10.png)
+<br>
+
+![high res](images/res_over100.png)
 
 
 
