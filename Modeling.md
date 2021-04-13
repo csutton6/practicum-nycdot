@@ -393,16 +393,19 @@ Comparing MAE and MAPE<br>
 ![residuals plot](images/residuals_hist.png)
 <br>
 
-Predicted vs Observed
+Predicted vs Observed <br>
 ![pred vs obs](images/predvsobs.png)
+<br>
 
 What is the spatial relationship? <br>
 ![spatial relationship](images/count_lag.png)
+<br>
 
 How do errors compare to spatial lag? <br>
 ![erros and lag](images/error_lag_plot.png)
+<br>
 
-Mapping Residuals
+Mapping Residuals <br>
 ![med res](images/res_over10.png)
 <br>
 
