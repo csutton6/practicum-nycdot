@@ -2,7 +2,10 @@ setwd('C:/Users/katee/Box Sync/Practicum/shp/')
 #avoid scientific notation
 options(scipen = 999)
 
-#packages
+install.packages('ggcorrplot')
+install.packages('spdep')
+
+#### packages ####
 library(tidyverse)
 library(sf)
 library(lubridate)
@@ -12,6 +15,23 @@ library(ggplot2)
 library(kableExtra)
 library(stargazer)
 library(FNN)
+library(ggcorrplot)
+library(spdep)
+library(plotly)
+
+#palettes etc
+palette5 <- c("#25CB10", "#5AB60C", "#8FA108",   "#C48C04", "#FA7800")
+
+qBr <- function(df, variable, rnd) {
+  if (missing(rnd)) {
+    as.character(quantile(round(df[[variable]],0),
+                          c(.01,.2,.4,.6,.8), na.rm=T))
+  } else if (rnd == FALSE | rnd == F) {
+    as.character(formatC(quantile(df[[variable]]), digits = 3),
+                 c(.01,.2,.4,.6,.8), na.rm=T)
+  }
+}
+
 
 ##====Import and Clean Data====##
 
@@ -259,8 +279,6 @@ mapview(info.Aug)
 #Make the regression
 reg <- lm(Count ~ bikeline + dist.lane + nhCount + C2, data=info.Aug)
 
-#old features: n1Count + n2Count + n3Count +
-
 summary(reg)
 
 stargazer(reg, type = "html",
@@ -274,19 +292,207 @@ plot(info.Aug$Count, reg.res)+
 
 
 #plotting residuals some more
-
+info.Aug$res_reg1 <- residuals(reg)
+info.Aug$fitted_reg1<- fitted(reg)
 
 ggplot()+ 
   geom_point(aes(x = obs, y = pred))
 
 ggplot()+
-  geom_sf(data=reg, aes(color=residuals))
+  geom_sf(data=info.Aug, aes(color=res_reg1))
 
-mapview(info.Aug, color=info.Aug$re)
+ggplot(info.Aug, aes(x=res_reg1))+
+  geom_density()
+
+
+#### more detailed modeling - train/test and errors ####
+
+
+#corplot of numeric variables against each other
+# create a correlation matrix of all numerical variables
+numericVars <- 
+  select_if(st_drop_geometry(info.Aug[, -c(1:2, 5)]), is.numeric) %>% 
+  na.omit()
+
+glimpse(numericVars)
+
+corr<-round(cor(numericVars), 1)
+p.mat<- cor_pmat(numericVars)
+
+ggcorrplot(corr, method='circle')
+
+ggcorrplot(corr, hc.order = TRUE, type='lower', insig='blank')
+
+#correlation plots against dependent var
+st_drop_geometry(info.Aug) %>% 
+  dplyr::select(Count, bikeline, BikeLane, dist.lane, C2, nhCount) %>%
+  gather(Variable, Value, -Count) %>% 
+  ggplot(aes(Value, Count)) +
+  geom_point(size = .5) + geom_smooth(method = "lm", se=F, colour = "#FA7800") +
+  facet_wrap(~Variable, ncol = 3, scales = "free") +
+  labs(caption = "Count as a Function Some Numerical Variables")
+
+#map of some variables
+ggplot()+
+  geom_sf(data=info.Aug, aes(color=dist.lane))
+
+ggplot()+
+  geom_sf(data=info.Aug, aes(color=C2))
+
+ggplot()+
+  geom_sf(data=info.Aug, aes(color=nhCount))
+
+#retrain model into training and test sets
+# create the training set
+## 75% of the sample size
+smp_size <- floor(0.75 * nrow(info.Aug))
+
+## set the seed to make your partition reproducible
+set.seed(123)
+train_ind <- sample(seq_len(nrow(info.Aug)), size = smp_size)
+
+train <- info.Aug[train_ind, ]
+test <- info.Aug[-train_ind, ]
+
+# Regression  
+reg_all <- lm(Count ~ bikeline + dist.lane + C2, data = st_drop_geometry(train))
+
+summary(reg_all)
+
+# test set prediction 
+reg_all_predict <- predict(reg_all, newdata = test)
+
+#training set prediction
+reg_all_predict_train <- predict(reg_all, newdata = train)
+
+# training MAE
+rmse.train <- caret::MAE(reg_all_predict_train, train$Count)
+
+# test MAE
+rmse.test  <- caret::MAE(reg_all_predict, test$Count)
+
+test <- cbind(test, reg_all_predict)
+train <- cbind(train, reg_all_predict_train)
+
+
+#add error types for each prediction
+test <-
+  test %>%
+  mutate(Count.Predict = reg_all_predict,
+         Count.Error = reg_all_predict - Count,
+         Count.AbsError = abs(reg_all_predict - Count),
+         Count.APE = (abs(reg_all_predict - Count)) / Count)
+
+train <-
+  train %>%
+  mutate(Count.Predict = reg_all_predict_train,
+         Count.Error = reg_all_predict_train - Count,
+         Count.AbsError = abs(reg_all_predict_train - Count),
+         Count.APE = (abs(reg_all_predict_train - Count)) / Count)
+
+MAPE_Train <- mean(train$Count.APE)
+MAPE_Test <- mean(test$Count.APE)
+
+table4.1.2 <- matrix(data = c(rmse.train, rmse.test, MAPE_Train, MAPE_Test), nrow = 2, ncol = 2)
+
+rownames(table4.1.2) <- c("train", "test")
+colnames(table4.1.2) <- c("MAE", "MAPE")
+
+# show table
+table4.1.2 %>% kable(caption = "Table 4.1.2 - Training and Testing MAE and MAPE")
+
+#working with the errors
+rmse.train <- caret::MAE(reg_all_predict_train, train$Count)
+
+rmse.test  <- caret::MAE(reg_all_predict, test$Count)
+
+miami_test <- cbind(test, reg_all_predict)
+miami_training <- cbind(train, reg_all_predict_train)
+
+# true value vs. predicted value 
+preds.train <- data.frame(pred   = reg_all_predict_train,
+                          actual = train$Count,
+                          source = "training data")
+preds.test  <- data.frame(pred   = reg_all_predict,
+                          actual = test$Count,
+                          source = "testing data")
+preds <- rbind(preds.train, preds.test)
+
+#plot of predicted vs observed
+ggplot(preds, aes(x = pred, y = actual, color = source)) +
+  geom_point() +
+  geom_smooth(method = "lm", color = "green") +
+  geom_abline(color = "orange") +
+  coord_equal() +
+  theme_bw() +
+  facet_wrap(~source, ncol = 2) +
+  labs(title = "Comparing predictions to actual values",
+       x = "Predicted Value",
+       y = "Actual Value",
+       caption = "Figure 4.1.3 - Comparing predictions to actual values") +
+  theme(
+    legend.position = "none"
+  )
+
+#skipping cross validation
+
+#spatial distribution of errors
+glimpse(test)
+# plot errors from the test set on a map
+ggplot() +
+  geom_sf(data = test, aes(colour = Count.Error),
+          show.legend = "point", size = 1) +
+  #scale_colour_manual(values = palette5,
+  #                    labels=qBr(test,"SalePrice.Error"),
+  #                    name="Quintile Breaks\nof Abs Error") +
+  labs(title="Spatial Distribution of Residuals from Test Set", 
+       subtitle = "Both over-prediction and under-prediction included",
+       caption = "Spatial Distribution of Residuals from Test Set")
+
+#testing residuals for spatial lag with moran's i
+# 4.3.2 Moran Test and Spatial Lag
+#prices
+coords <- st_coordinates(st_centroid(info.Aug))
+
+# k nearest neighbors, k= 5
+neighborList <- knn2nb(knearneigh(coords, 5))
+spatialWeights <- nb2listw(neighborList, style="W")
+info.Aug$lagCount <- lag.listw(spatialWeights, info.Aug$Count)
+
+#errors
+coords.test <-  st_centroid(test)
+neighborList.test <- knn2nb(knearneigh(coords.test, 5))
+spatialWeights.test <- nb2listw(neighborList.test, style="W")
+test$lagCountError <- lag.listw(spatialWeights.test, test$Count.AbsError)
+
+#spatial lag of count
+ggplot(info.Aug, aes(x=lagCount, y=Count)) +
+  geom_point(colour = "#FA7800") +
+  geom_smooth(method = "lm", se = FALSE, colour = "#25CB10") +
+  labs(title = "Count as a function of the spatial lag of count",
+       caption = "count as a function of the spatial lag of count",
+       x = "Spatial lag of count (Mean count of 5 nearest neighbors)",
+       y = "Trip Count") 
+
+#spatial lag vs error
+error_lag_plot<- ggplot(test, aes(x=lagCountError, y=Count, label=ntaname)) +
+  geom_point(colour = "#FA7800") +
+  geom_smooth(method = "lm", se = FALSE, colour = "#25CB10") +
+  labs(title = "Error as a function of the spatial lag of count",
+       caption = "Error as a function of the spatial lag of count",
+       x = "Spatial lag of errors (Mean error of 5 nearest neighbors)",
+       y = "Trip Count")
+error_lag_plot
+
+glimpse(test)
+ggplotly(error_lag_plot,
+         tooltip=c('Street', 'bikeline', 'Count', 'lagCountError', 'ntaname'))
+
+ggplotly(error_lag_plot)
 
 
 
-#neighborhood effect?
+##### neighborhood effect? #### 
 reg.nh <- lm(Count ~ bikeline + dist.lane + protected + unprotected +
                n1Count + n2Count + n3Count + nhCount, data=info.Aug)
 
@@ -294,7 +500,7 @@ stargazer(reg.nh, type = "html",
           title = "Regression results",
           single.row = TRUE)
 
-##Modeling results in Different borough
+#### Modeling results in Different borough ####
 Manhattan <- borough %>%
   filter(boro_name == "Manhattan") %>%
   st_transform(st_crs(info.Aug))
