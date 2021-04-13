@@ -406,6 +406,9 @@ How do errors compare to spatial lag? <br>
 <br>
 
 Mapping Residuals <br>
+![all res](images/all_res_map.png)
+<br>
+
 ![med res](images/res_over10_2.png)
 <br>
 
