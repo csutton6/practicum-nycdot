@@ -2,7 +2,6 @@ setwd('C:/Users/katee/Box Sync/Practicum/shp/')
 #avoid scientific notation
 options(scipen = 999)
 
-install.packages('visreg')
 
 #### packages ####
 library(tidyverse)
@@ -17,9 +16,9 @@ library(FNN)
 library(ggcorrplot)
 library(spdep)
 library(plotly)
-library(visreg)
 library(car)
-#palettes etc
+
+#### palettes etc ####
 palette5 <- c("#25CB10", "#5AB60C", "#8FA108",   "#C48C04", "#FA7800")
 
 qBr <- function(df, variable, rnd) {
@@ -32,8 +31,27 @@ qBr <- function(df, variable, rnd) {
   }
 }
 
+##nn function
+nn_function <- function(measureFrom,measureTo,k) {
+  measureFrom_Matrix <- as.matrix(measureFrom)
+  measureTo_Matrix <- as.matrix(measureTo)
+  nn <-   
+    get.knnx(measureTo, measureFrom, k)$nn.dist
+  output <-
+    as.data.frame(nn) %>%
+    rownames_to_column(var = "thisPoint") %>%
+    gather(points, point_distance, V1:ncol(.)) %>%
+    arrange(as.numeric(thisPoint)) %>%
+    group_by(thisPoint) %>%
+    summarize(pointDistance = mean(point_distance)) %>%
+    arrange(as.numeric(thisPoint)) %>% 
+    dplyr::select(-thisPoint) %>%
+    pull()
+  
+  return(output)  
+}
 
-##====Import and Clean Data====##
+####====Import and Clean Data====####
 
 #import trip data
 Aug_pnts <- st_read("tripPoints_Aug20.shp")
@@ -45,15 +63,11 @@ Aug_pnts <- Aug_pnts %>%
 Aug_pnts <- Aug_pnts %>%
   filter(day <= 15)
 
-#might not need this
+#NYC boroughs
 borough<- st_read('https://data.cityofnewyork.us/resource/7t3b-ywvw.geojson')%>%
   st_transform(st_crs(Aug_pnts))
 
-#borough-->not Staten Island
-borough <- borough %>%
-  filter(boro_name != "Staten Island")
-
-#haven't used this yet
+#citibike stations
 station<- st_read('Stations_Aug_2020.shp')%>%
   st_transform(st_crs(Aug_pnts))
 
@@ -65,13 +79,12 @@ extent <- st_read("station_extent_Aug2020.shp") %>%
 Aug_pnts <- Aug_pnts[extent,]
 
 
-#neighborhood DATA
-#reference:https://www1.nyc.gov/site/planning/data-maps/open-data/dwn-nynta.page
+#neighborhoods
 neighborhood <- st_read('https://data.cityofnewyork.us/resource/q2z5-ai38.geojson')%>%
   st_transform(st_crs(Aug_pnts))
 
 
-#only neighboor in citibike extent
+#only neighborhood in citibike extent
 neighborhood <- neighborhood[extent,]
 
 
@@ -82,10 +95,6 @@ bike20d_buffer <- st_read("lion_buffer15/lion_buffer15.shp") %>%
 
 #clip roads to citibike extent
 bike20d_buffer<- bike20d_buffer[extent,]
-
-
-non_phys<- subset(bike20d_buffer, RW_TYPE==12)
-amtrak<-subset(bike20d_buffer, bike20d_buffer$Street=='AMTRAK-NORTHEAST LINE')
 
 #get rid of non-road data (eg shorelines and boundaries)
 bike20d_buffer_drop<- subset(bike20d_buffer, RW_TYPE !=12 &
@@ -107,15 +116,9 @@ bike20d_buffer_drop<- subset(bike20d_buffer, RW_TYPE !=12 &
 #highways
 highways<- subset(bike20d_buffer, RW_TYPE==2 | SegmentTyp=='E')
 
-unique(highways$Street)
-
-mapview(highways)
-
 #divided streets
 divided<-subset(bike20d_buffer, SegmentTyp=='G' | SegmentTyp=='R' | SegmentTyp=='T' | SegmentTyp=='C')
-
 divided_better<-subset(bike20d_buffer, SegmentTyp=='R' | SegmentTyp=='T' |SegmentTyp=='C')
-
 mapview(divided_better)
 
 #tunnels
@@ -156,22 +159,6 @@ bike20d_buffer <- bike20d_buffer %>%
 
 glimpse(bike20d_buffer)
 
-
-# if we do dummy variables for each level of bikelane
-##Protected bikelanes
-bike20d_buffer <- bike20d_buffer %>%
-  mutate(protected = ifelse(BikeLane == "1", "yes", "no"))
-#assign NA with no
-bike20d_buffer$protected[is.na(bike20d_buffer$protected)] <- "no"
-
-
-##Unprotected bikelanes
-bike20d_buffer <- bike20d_buffer %>%
-  mutate(unprotected = ifelse(BikeLane == "2", "yes", "no"))
-#assign NA with no
-bike20d_buffer$unprotected[is.na(bike20d_buffer$unprotected)] <- "no"
-
-
 #summing ridership onto streets
 #Find out the points inside bikelanes
 Aug.in <- Aug_pnts[bike20d_buffer,]
@@ -210,40 +197,15 @@ bike.nh <- bike.nh %>%
 
 
 
-##=====Feature Engineering========##
-
-##nn function
-nn_function <- function(measureFrom,measureTo,k) {
-  measureFrom_Matrix <- as.matrix(measureFrom)
-  measureTo_Matrix <- as.matrix(measureTo)
-  nn <-   
-    get.knnx(measureTo, measureFrom, k)$nn.dist
-  output <-
-    as.data.frame(nn) %>%
-    rownames_to_column(var = "thisPoint") %>%
-    gather(points, point_distance, V1:ncol(.)) %>%
-    arrange(as.numeric(thisPoint)) %>%
-    group_by(thisPoint) %>%
-    summarize(pointDistance = mean(point_distance)) %>%
-    arrange(as.numeric(thisPoint)) %>% 
-    dplyr::select(-thisPoint) %>%
-    pull()
-  
-  return(output)  
-}
-
-
-
+####=====Feature Engineering========####
 #change projection
 info.Aug <- info.Aug %>% st_transform('ESRI:102711')
 bike20d_buffer <- bike20d_buffer %>% st_transform('ESRI:102711')
 bike.Aug <- bike.Aug %>% st_transform('ESRI:102711')
 bikelanes <- bikeslines %>% st_transform('ESRI:102711')
 bike.nh <- bike.nh %>% st_transform('ESRI:102711')
+station <- station %>% st_transform('ESRI:102711')
 
-
-
-##distance to nearest bikelanes
 
 ###Distance to nearest bikelanes
 info.Aug <- info.Aug %>%
@@ -394,8 +356,8 @@ mapview(haulster)
 snow_v<-subset(info.Aug, Snow_Prior=='V')
 mapview(snow_v)
 
-info.Aug$SnowLv<-0
-info.Aug$SnowLv[info.Aug$Snow_Prior=='S']<-1
+info.Aug$MinorSnowRoute<-0
+info.Aug$MinorSnowRoute[info.Aug$Snow_Prior=='S']<-1
 
 #speed limit
 info.Aug$POSTED_SPE<-as.numeric(info.Aug$POSTED_SPE)
@@ -414,6 +376,59 @@ info.Aug$Speed_20s[info.Aug$POSTED_SPE==15]<-0
 info.Aug$Truck_Thru<-0
 info.Aug$Truck_Thru[info.Aug$TRUCK_ROUT==3]<-1
 
+#citibike stations
+#drop all columns but geometry
+station<-station%>%
+  select()
+
+#distance to of nearest 5 stations
+info.Aug <-
+  info.Aug %>% 
+  mutate(
+    citibike_nn1 = nn_function(st_coordinates(st_centroid(info.Aug)), st_coordinates(station), 1),
+    citibike_nn2 = nn_function(st_coordinates(st_centroid(info.Aug)), st_coordinates(station), 2), 
+    citibike_nn3 = nn_function(st_coordinates(st_centroid(info.Aug)), st_coordinates(station), 3), 
+    citibike_nn4 = nn_function(st_coordinates(st_centroid(info.Aug)), st_coordinates(station), 4), 
+    citibike_nn5 = nn_function(st_coordinates(st_centroid(info.Aug)), st_coordinates(station), 5)) 
+
+#count of stations within a buffer
+st_crs(info.Aug)
+st_crs(station)
+
+info.Aug$citibike.Buffer =
+  st_buffer(info.Aug, 500) %>% 
+  aggregate(mutate(station, counter = 1),., sum) %>%
+  pull(counter)
+
+info.Aug$citibike.Buffer[is.na(info.Aug$citibike.Buffer)] <- 0
+
+info.Aug$citibike.Buffer_large =
+  st_buffer(info.Aug, 1000) %>% 
+  aggregate(mutate(station, counter = 1),., sum) %>%
+  pull(counter)
+info.Aug$citibike.Buffer_large[is.na(info.Aug$citibike.Buffer_large)] <- 0
+
+info.Aug$citibike.Buffer_small =
+  st_buffer(info.Aug, 250) %>% 
+  aggregate(mutate(station, counter = 1),., sum) %>%
+  pull(counter)
+info.Aug$citibike.Buffer_small[is.na(info.Aug$citibike.Buffer_small)] <- 0
+
+#edge effect (not working right now)
+extent.point <- st_cast(extent,"LINESTRING") 
+
+extent.point<- st_cast(extent, 'POINT')
+
+mapview(extent.point)
+
+info.Aug$dist.edge_2<- st_cast(extent, 'LINESTRING')%>% st_distance(y=info.Aug$geometry)
+
+info.Aug <- info.Aug %>%
+  mutate(dist.edge = nn_function((st_coordinates(st_centroid(info.Aug))),
+                                  st_coordinates(extent.point), 1))
+
+#write the data (not working)
+st_write(info.Aug, 'info.Aug.shp')
 
 #### Correlations ####
 #corplot of numeric variables against each other
@@ -427,11 +442,9 @@ glimpse(numericVars)
 corr<-round(cor(numericVars), 1)
 p.mat<- cor_pmat(numericVars)
 
-ggcorrplot(corr, method='circle')
-
 ggcorrplot(corr, hc.order = TRUE, type='lower', insig='blank')
 
-#qualitative vars cor plot
+#qualitative vars scatter plot
 st_drop_geometry(info.Aug) %>% 
   dplyr::select(Count, bikeLaneLv, POSTED_SPE, Number_Tra, Number_Tot,
                 Snow_Prior, TRUCK_ROUT, RW_TYPE, Number_Par, BIKE_TRAFD,
@@ -514,37 +527,23 @@ info.Aug$Centroid <- st_centroid(info.Aug$geometry)
 st_coordinates(info.Aug$Centroid)
 
 #Make the regression
-reg_b <- lm(Count ~ bikeLaneLv + dist.lane + Number_Tra + StreetWidt + SnowLv + POSTED_SPE  + TRUCK_ROUT
-            + YFrom*isMH + XFrom*isMH + nhCount, data=info.Aug)
+reg_b <- lm(Count ~ bikeLaneLv + dist.lane + Number_Tra + StreetWidt + MinorSnowRoute + POSTED_SPE  + TRUCK_ROUT
+            + YFrom*isMH + XFrom*isMH + nhCount + citibike.Buffer_small, data=info.Aug)
 summary(reg_b)
 
-reg_p <- lm(Count ~ bikeLaneLv + dist.lane + Number_Tra + StreetWidt + SnowLv + POSTED_SPE  + TRUCK_ROUT
-             + YFrom*isMH + XFrom*isMH + nhCount , data=info.Aug)
+reg_p <- lm(Count ~ bikeLaneLv + dist.lane + Number_Tra + StreetWidt + MinorSnowRoute + POSTED_SPE  + TRUCK_ROUT
+             + YFrom*isMH + XFrom*isMH + nhCount + citibike.Buffer_small , data=info.Aug)
 summary(reg_p)
 
-reg_p2<-lm(Count ~ bikeLaneLv + isMH + dist.lane + Number_Tra + StreetWidt + SnowLv + POSTED_SPE + TRUCK_ROUT , data=info.Aug)
+reg_p2<-lm(Count ~ bikeLaneLv + isMH + dist.lane + Number_Tra + StreetWidt + SnowLv + POSTED_SPE + TRUCK_ROUT
+           + YFrom*isMH + XFrom*isMH + nhCount + citibike.Buffer_small, data=info.Aug)
 summary(reg_p2)
 
-reg_2 <- lm(Count ~ bikeLaneLv + LBoro + dist.lane + Number_Tra + StreetWidt +
-              XFrom + YFrom + nhCount + trailOrNot + Snow_Prior + TRUCK_ROUT 
-            + NonPed + link_type, data=info.Aug)
 
-summary(reg_2)
-
-reg_3 <- lm(Count ~ bikeLaneLv + isMH + dist.lane + Number_Tra + StreetWidt +
-              XFrom + YFrom + nhCount + trailOrNot + Snow_Prior + TRUCK_ROUT 
-            + NonPed + link_type, data=info.Aug)
-
-summary(reg_3)
 
 stargazer(reg, type = "html",
           title = "Regression results",
           single.row = TRUE)
-
-reg.res = resid(reg)
-
-plot(info.Aug$Count, reg.res)+
-  abline(0,0)
 
 
 #plotting residuals some more
