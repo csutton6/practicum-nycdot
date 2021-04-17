@@ -88,7 +88,7 @@ road2020_se <- road2020_se %>%
     ),
     bikeLaneLv = case_when(
       BikeLane == 1 | BikeLane == 5 | BikeLane == 8 | BikeLane == 9 | BikeLane == 10 ~ "Protected",
-      BikeLane == 2 | BikeLane == 3 | BikeLane == 4 | BikeLane == 6 | BikeLane == 11 ~ "unProtected",
+      BikeLane == 2 | BikeLane == 3 | BikeLane == 4 | BikeLane == 6 | BikeLane == 11 ~ "Unprotected",
       TRUE ~ "noBikeLane"
     ))
 
