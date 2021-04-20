@@ -426,12 +426,21 @@ Corplots of census variables <br>
 Linear regression results<br>
 ![results 4.20](images/4.20_census_results.PNG)<br>
 
+
+Random forest model results (using just LION and citibike station features)<br>
+
 ```
 reg_rf <- ranger::ranger(Count ~ bikeLaneLv + isMH + dist.lane + Number_Tra + StreetWidt + MinorSnowRoute + POSTED_SPE + TRUCK_ROUT 
                          + nhCount + citibike.Buffer_small, data=info.Aug_test)
 ```
 
-Random forest model results (using just LION and citibike station features)<br>
+The features used in random forest:
+* bikeLaneLv
+* isMH
+* dist.lane
+* Number_Tra + StreetWidt + MinorSnowRoute + POSTED_SPE + TRUCK_ROUT 
+                         + nhCount + citibike.Buffer_small
+
 ![random img 1](images/APE.png)<br>
 
 ![random img 2](images/AbsError.png)<br>
