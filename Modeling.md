@@ -438,8 +438,13 @@ The features used in random forest:
 * bikeLaneLv
 * isMH
 * dist.lane
-* Number_Tra + StreetWidt + MinorSnowRoute + POSTED_SPE + TRUCK_ROUT 
-                         + nhCount + citibike.Buffer_small
+* Number_Tra
+* StreetWidt
+* MinorSnowRoute
+* POSTED_SPE
+* TRUCK_ROUT 
+* nhCount
+* citibike.Buffer_small
 
 ![random img 1](images/APE.png)<br>
 
