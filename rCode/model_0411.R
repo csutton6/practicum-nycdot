@@ -73,9 +73,17 @@ borough<- st_read('https://data.cityofnewyork.us/resource/7t3b-ywvw.geojson')%>%
 station<- st_read('Stations_Aug_2020.shp')%>%
   st_transform(st_crs(Aug_pnts))
 
+station<- st_read('Infrastructure/Citibike_Stations/Stations_Aug_2020.shp')%>%
+  st_transform(st_crs(Aug_pnts))
+
 #Station Extent
 extent <- st_read("station_extent_Aug2020.shp") %>%
   st_transform(st_crs(Aug_pnts))
+
+extent <- st_read('OtherData/Station_Extent_2020/station_extent_Aug2020.shp')%>%
+  st_transform(st_crs(Aug_pnts))
+
+mapview(extent)
 
 #find out pnts inside citibike extent
 Aug_pnts <- Aug_pnts[extent,]
