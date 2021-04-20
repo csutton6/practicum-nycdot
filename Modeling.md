@@ -423,8 +423,8 @@ Corplots with LION variables and citibike stations <br>
 Corplots of census variables <br>
 ![corplot 2](images/census_corplot.png) <br>
 
-Linear model results<br>
-![results 4.20](images/4.20_census_results.png)<br>
+Linear regression results<br>
+![results 4.20](images/4.20_census_results.PNG)<br>
 
 Random forest model results (using just LION and citibike station features)<br>
 ![random img 1](images/APE.png)<br>
