@@ -1,4 +1,5 @@
 setwd('C:/Users/katee/Box Sync/Practicum/shp/')
+setwd('C:/Users/xinti/Box/MUSA_800_Practicum/Data')
 #avoid scientific notation
 options(scipen = 999)
 
@@ -57,6 +58,7 @@ nn_function <- function(measureFrom,measureTo,k) {
 
 #import trip data
 Aug_pnts <- st_read("tripPoints_Aug20.shp")
+Aug_pnts <- st_read("BikeTrips/pointData/Aug20_pnts/tripPoints_Aug20.shp") %>% st_transform(crs = 4326)
 
 #filter out dates in 1-15
 Aug_pnts <- Aug_pnts %>%
@@ -73,9 +75,17 @@ borough<- st_read('https://data.cityofnewyork.us/resource/7t3b-ywvw.geojson')%>%
 station<- st_read('Stations_Aug_2020.shp')%>%
   st_transform(st_crs(Aug_pnts))
 
+station<- st_read('Infrastructure/Citibike_Stations/Stations_Aug_2020.shp')%>%
+  st_transform(st_crs(Aug_pnts))
+
 #Station Extent
 extent <- st_read("station_extent_Aug2020.shp") %>%
   st_transform(st_crs(Aug_pnts))
+
+extent <- st_read('OtherData/Station_Extent_2020/station_extent_Aug2020.shp')%>%
+  st_transform(st_crs(Aug_pnts))
+
+mapview(extent)
 
 #find out pnts inside citibike extent
 Aug_pnts <- Aug_pnts[extent,]
