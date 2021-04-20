@@ -163,7 +163,6 @@ bike20d_buffer_drop <- bike20d_buffer_drop %>%
 
 bike20d_buffer<- bike20d_buffer_drop
 bike20d_buffer <- distinct(bike20d_buffer,SegmentID,.keep_all = T)
-# ggplot()+geom_sf(data = bike20d_buffer %>% st_as_sf(),aes(color = "red"))
 
 #select useful column
 bike20d_buffer <- bike20d_buffer %>%
@@ -195,12 +194,12 @@ count.Aug <- ls.Aug %>%
 
 #merge the info that whether the road is bikelane or not
 #keep the order to makesure sf
-info.Aug <- merge(bike20d_buffer, count.Aug, all.x = T)
+info.Aug <- left_join(count.Aug,bike20d_buffer,by = "SegmentID")
 
 #find out the number of trips on bikelanes
 bikelanes <- bike20d_buffer %>% filter(BikeLane == "1"| BikeLane == "2" | BikeLane == "5" | BikeLane == "9" |
                                          BikeLane == '4' | BikeLane == '8' | BikeLane == '10')
-bike.Aug <- merge(bikelanes, count.Aug, all.x = T)
+bike.Aug <- merge(bikelanes, count.Aug)
 
 #find out the number of trips in each neighborhood
 bike.nh <- st_join(info.Aug, neighborhood %>% st_transform(st_crs(info.Aug)), join=st_intersects, left=TRUE)
@@ -218,7 +217,7 @@ bike.nh <- bike.nh %>%
 info.Aug <- info.Aug %>% st_transform('ESRI:102711')
 bike20d_buffer <- bike20d_buffer %>% st_transform('ESRI:102711')
 bike.Aug <- bike.Aug %>% st_transform('ESRI:102711')
-bikelanes <- bikelanes %>% st_transform('ESRI:102711')
+bikelanes <- bikeslines %>% st_transform('ESRI:102711')
 bike.nh <- bike.nh %>% st_transform('ESRI:102711')
 station <- station %>% st_transform('ESRI:102711')
 
@@ -555,19 +554,7 @@ reg_p2<-lm(Count ~ bikeLaneLv + isMH + dist.lane + Number_Tra + StreetWidt + Sno
            + YFrom*isMH + XFrom*isMH + nhCount + citibike.Buffer_small, data=info.Aug)
 summary(reg_p2)
 
-info.Aug_test <- info.Aug %>% mutate_all(~replace(.,is.na(.),0)) %>% st_drop_geometry()
-reg_rf <- ranger::ranger(Count ~ bikeLaneLv + isMH + dist.lane + Number_Tra + StreetWidt + MinorSnowRoute + POSTED_SPE + TRUCK_ROUT 
-                         + nhCount + citibike.Buffer_small, data=info.Aug_test)
-summary(reg_rf)
 
-info.Aug_test$pred <- predict(reg_rf,data = info.Aug_test)$predictions
-info.Aug_test <- info.Aug_test %>% mutate(
-  Error = pred - Count,
-  AbsError = abs(pred - Count),
-  APE = ((abs(pred - Count))/pred)
-)
-
-ggplot()+geom_histogram(data = info.Aug_test,aes(APE),binwidth = 0.5)
 
 stargazer(reg, type = "html",
           title = "Regression results",
