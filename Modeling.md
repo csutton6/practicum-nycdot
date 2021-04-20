@@ -414,5 +414,23 @@ Mapping Residuals <br>
 
 ![high res](images/res_over100_large.png)
 
+## New Feature Engineering w/o Spatial Lag
+
+#### linear model to test features
+Corplots with LION variables and citibike stations <br>
+![corplot 1](images/corplots_4.15.png) <br>
+
+Corplots of census variables <br>
+![corplot 2](images/census_corplot.png) <br>
+
+Linear model results<br>
+![results 4.20](images/4.20_census_results.png)<br>
+
+Random forest model results (using just LION and citibike station features)<br>
+![random img 1](images/APE.PNG)<br>
+
+![random img 2](images/AbsError.PNG)<br>
+
+
 
 
