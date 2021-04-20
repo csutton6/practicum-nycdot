@@ -229,111 +229,6 @@ info.Aug <- info.Aug %>%
                                  st_coordinates(st_centroid(bikelanes$geometry)), 1))
 
 
-
-#### NOT DOING THIS RN ####
-##Biketrips at closest roads
-
-#function to get cloest idx
-# nn_idx<- nn_function <- function(measureFrom,measureTo,k) {
-#   measureFrom_Matrix <- as.matrix(measureFrom)
-#   measureTo_Matrix <- as.matrix(measureTo)
-#   nn <-   
-#     get.knnx(measureTo, measureFrom, k)$nn.index[,k]
-#   return(nn)  
-# }
-
-#N1
-#get the index
-# info.Aug <- info.Aug %>%
-#   mutate(nnidx = nn_idx(st_coordinates(st_centroid(info.Aug$geometry)),
-#                         st_coordinates(st_centroid(bike.Aug$geometry)), 1))
-
-
-#extract count based on index
-# for (i in 1:nrow(info.Aug)) {
-#   info.Aug$n1Count[i] =bike.Aug[info.Aug$nnidx[i],]$Count
-# }
-
-#N2
-#get the index
-# info.Aug <- info.Aug %>%
-#   mutate(nnidx2 = nn_idx(st_coordinates(st_centroid(info.Aug$geometry)),
-#                          st_coordinates(st_centroid(bike.Aug$geometry)), 2))
-
-
-# #extract count based on index
-# for (i in 1:nrow(info.Aug)) {
-#   info.Aug$n2Count[i] =bike.Aug[info.Aug$nnidx2[i],]$Count
-# }
-# 
-# 
-# #N3
-# #get the index
-# info.Aug <- info.Aug %>%
-#   mutate(nnidx3 = nn_idx(st_coordinates(st_centroid(info.Aug$geometry)),
-#                          st_coordinates(st_centroid(bike.Aug$geometry)), 3))
-# 
-# #extract count based on index
-# for (i in 1:nrow(info.Aug)) {
-#   info.Aug$n3Count[i] =bike.Aug[info.Aug$nnidx3[i],]$Count
-# }
-
-
-# #### INCLUDED THIS ####
-# #The number of biketrips in each neighborhood
-# info.Aug <- st_join(info.Aug, bike.nh, join=st_intersects, left=TRUE)
-# 
-# 
-# #### NOT INCLUDED: C2 ####
-# #the number of biketrips on the surrounding  (closest) 2 roads
-# info.Aug2 <- info.Aug
-# 
-# #C1
-# #get the index
-# info.Aug <- info.Aug %>%
-#   mutate(cidx = nn_idx(st_coordinates(st_centroid(info.Aug$geometry)),
-#                        st_coordinates(st_centroid(info.Aug2$geometry)), 1))
-# #C2
-# info.Aug <- info.Aug %>%
-#   mutate(cidx2 = nn_idx(st_coordinates(st_centroid(info.Aug$geometry)),
-#                         st_coordinates(st_centroid(info.Aug2$geometry)), 2))
-# 
-# #extract count based on index
-# for (i in 1:nrow(info.Aug)) {
-#   info.Aug$c1Count[i] =info.Aug2[info.Aug$cidx[i],]$Count
-# }
-# 
-# 
-# for (i in 1:nrow(info.Aug)) {
-#   info.Aug$c2Count[i] =info.Aug2[info.Aug$cidx2[i],]$Count
-# }
-# 
-# info.Aug <- info.Aug %>%
-#   mutate(C2 = c1Count + c2Count)
-# 
-# 
-# mapview(info.Aug)
-
-
-#### Adding more features ####
-
-# #link_type
-# info.Aug$link_type<- ifelse(grepl('street', info.Aug$Street, ignore.case=T), 'street',
-#                             ifelse(grepl('avenue', info.Aug$Street, ignore.case=T), 'avenue',
-#                                    ifelse(grepl('boulevard', info.Aug$Street, ignore.case=T), 'boulevard',
-#                                           ifelse(grepl(' st ', info.Aug$Street, ignore.case = T), 'street', 
-#                                                  ifelse(grepl(' ave ', info.Aug$Street, ignore.case = T), 'avenue', 'other')))))
-
-# unique(info.Aug$link_type)
-# 
-# info.Aug$isAve<- 0
-# info.Aug$isAve[info.Aug$link_type=='avenue']<-1
-# 
-# aves<-subset(info.Aug, link_type=='avenue')
-# 
-# ggplot()+
-#   geom_sf(data=aves)
-
 #borough
 boxplot(Count ~ LBoro,
         data=info.Aug)
@@ -345,14 +240,6 @@ info.Aug$isMH[info.Aug$LBoro==1]<-1
 
 #travel lanes
 info.Aug$Number_Tra <- as.numeric(info.Aug$Number_Tra)
-# info.Aug$Number_Tot <- as.numeric(info.Aug$Number_Tot)
-# info.Aug$Number_Par <- as.numeric(info.Aug$Number_Par)
-# 
-# glimpse(info.Aug)
-
-# info.Aug$FewLanes<- 0
-# info.Aug$FewLanes[info.Aug$Number_Tra>3]<-1
-
 
 #snow route
 critical<-subset(info.Aug, Snow_Prior=='C')
@@ -379,45 +266,11 @@ ggplot(info.Aug, aes(x=POSTED_SPE, y=Count))+
 boxplot(Count~POSTED_SPE,
         data=info.Aug)
 
-# info.Aug$Speed_20s<-0
-# info.Aug$Speed_20s[info.Aug$POSTED_SPE<30]<-1
-# info.Aug$Speed_20s[info.Aug$POSTED_SPE==15]<-0
-
-#truck route
-# info.Aug$Truck_Thru<-0
-# info.Aug$Truck_Thru[info.Aug$TRUCK_ROUT==3]<-1
 
 #citibike stations
 #drop all columns but geometry
 station<-station%>%
   select()
-
-#distance to of nearest 5 stations
-# info.Aug <-
-#   info.Aug %>% 
-#   mutate(
-#     citibike_nn1 = nn_function(st_coordinates(st_centroid(info.Aug)), st_coordinates(station), 1),
-#     citibike_nn2 = nn_function(st_coordinates(st_centroid(info.Aug)), st_coordinates(station), 2), 
-#     citibike_nn3 = nn_function(st_coordinates(st_centroid(info.Aug)), st_coordinates(station), 3), 
-#     citibike_nn4 = nn_function(st_coordinates(st_centroid(info.Aug)), st_coordinates(station), 4), 
-#     citibike_nn5 = nn_function(st_coordinates(st_centroid(info.Aug)), st_coordinates(station), 5)) 
-
-#count of stations within a buffer
-# st_crs(info.Aug)
-# st_crs(station)
-# 
-# info.Aug$citibike.Buffer =
-#   st_buffer(info.Aug, 500) %>% 
-#   aggregate(mutate(station, counter = 1),., sum) %>%
-#   pull(counter)
-# 
-# info.Aug$citibike.Buffer[is.na(info.Aug$citibike.Buffer)] <- 0
-# 
-# info.Aug$citibike.Buffer_large =
-#   st_buffer(info.Aug, 1000) %>% 
-#   aggregate(mutate(station, counter = 1),., sum) %>%
-#   pull(counter)
-# info.Aug$citibike.Buffer_large[is.na(info.Aug$citibike.Buffer_large)] <- 0
 
 info.Aug$citibike.Buffer_small =
   st_buffer(info.Aug, 250) %>% 
@@ -438,8 +291,6 @@ info.Aug <- info.Aug %>%
   mutate(dist.edge = nn_function((st_coordinates(st_centroid(info.Aug))),
                                   st_coordinates(extent.point), 1))
 
-#write the data (not working)
-# st_write(info.Aug, 'info.Aug.shp')
 
 #### Correlations ####
 #corplot of numeric variables against each other
