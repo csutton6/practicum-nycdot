@@ -427,9 +427,9 @@ Linear model results<br>
 ![results 4.20](images/4.20_census_results.png)<br>
 
 Random forest model results (using just LION and citibike station features)<br>
-![random img 1](images/APE.PNG)<br>
+![random img 1](images/APE.png)<br>
 
-![random img 2](images/AbsError.PNG)<br>
+![random img 2](images/AbsError.png)<br>
 
 
 
