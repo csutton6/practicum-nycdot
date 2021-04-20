@@ -1,4 +1,5 @@
 setwd('C:/Users/katee/Box Sync/Practicum/shp/')
+setwd('C:/Users/xinti/Box/MUSA_800_Practicum/Data')
 #avoid scientific notation
 options(scipen = 999)
 
@@ -55,6 +56,7 @@ nn_function <- function(measureFrom,measureTo,k) {
 
 #import trip data
 Aug_pnts <- st_read("tripPoints_Aug20.shp")
+Aug_pnts <- st_read("BikeTrips/pointData/Aug20_pnts/tripPoints_Aug20.shp") %>% st_transform(crs = 4326)
 
 #filter out dates in 1-15
 Aug_pnts <- Aug_pnts %>%
