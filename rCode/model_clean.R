@@ -4,8 +4,6 @@ setwd('C:/Users/xinti/Box/MUSA_800_Practicum/Data')
 #avoid scientific notation
 options(scipen = 999)
 
-install.packages('corpcor')
-
 #### packages ####
 library(tidyverse)
 library(sf)
@@ -24,6 +22,10 @@ library(ranger)
 library(tidycensus)
 library(corpcor)
 library(caret)
+library(rjson)
+library(tidyr)
+library(sp)
+library(osmdata)
 
 #### palettes etc ####
 palette5 <- c("#25CB10", "#5AB60C", "#8FA108",   "#C48C04", "#FA7800")
@@ -74,6 +76,8 @@ Aug_pnts <- Aug_pnts %>%
 #NYC boroughs
 borough<- st_read('https://data.cityofnewyork.us/resource/7t3b-ywvw.geojson')%>%
   st_transform(st_crs(Aug_pnts))
+
+boros_4<-subset(borough, boro_code<5)
 
 #citibike stations
 station<- st_read('Stations_Aug_2020.shp')%>%
@@ -133,38 +137,29 @@ bike20d_buffer_drop<- subset(bike20d_buffer, RW_TYPE !=12 &
                                SegmentTyp !='T')
 
 
-#add a highway, trail, and tunnel 
+#add bike lane level
 bike20d_buffer_drop <- bike20d_buffer_drop %>% 
   mutate(
-    trailOrNot = case_when(
-      RW_TYPE == 6 ~ 1,
-      TRUE~0
-    ),
     bikeLaneLv = case_when(
       BikeLane == 1 | BikeLane == 5 | BikeLane == 8 | BikeLane == 9 | BikeLane == 10 ~ "Protected",
       BikeLane == 2 | BikeLane == 3 | BikeLane == 4 | BikeLane == 6 | BikeLane == 11 ~ "Unprotected",
       TRUE ~ "noBikeLane"
-    ),
-    bridgeOrNot = case_when(
-      RW_TYPE == 3 ~ 1,
-      TRUE~0
     ))
 
 bike20d_buffer<- bike20d_buffer_drop
 bike20d_buffer <- distinct(bike20d_buffer,SegmentID,.keep_all = T)
 
-#select useful column
+#select useful columns
 bike20d_buffer <- bike20d_buffer %>%
   select(Street, BikeLane, SegmentID, FeatureTyp, SegmentTyp, NonPed,
          TrafDir, SegCount, LBoro, XFrom, YFrom, RW_TYPE, Snow_Prior,
          Number_Tra, Number_Par, Number_Tot, BIKE_TRAFD, 
-         StreetWidt, StreetWi_1, StreetWi_2, TRUCK_ROUT, POSTED_SPE, trailOrNot, 
-         bikeLaneLv, bridgeOrNot, geometry)
+         StreetWidt, StreetWi_1, StreetWi_2, TRUCK_ROUT, POSTED_SPE,  
+         bikeLaneLv, geometry)
 
 
-#### Calculating Ridership ####
-######################### Calculate ridership #####################
-# clip pnts outside of the road buffers
+#### Calculate Ridership ####
+# clip points to the road buffers
 bike20d_buffer<- st_transform(bike20d_buffer, crs=4326)
 
 points_clean <- Aug_pnts[bike20d_buffer,] %>% 
@@ -194,65 +189,21 @@ info.Aug <- bike20d_buffer %>%
 info.Aug$Count[is.na(info.Aug$Count)] <- 0
 
 
-
-#old code
-#Find out the points inside bikelanes
-#Aug.in <- Aug_pnts[bike20d_buffer,]
-
-#allocate street names
-#Aug.in <- st_join(Aug.in, bike20d_buffer, join=st_intersects, left=TRUE)
-
-#Group Points inside Same Street and Same ID as linestring
-#ls.Aug <- Aug.in %>%
-#  st_drop_geometry() %>%
-#  group_by(index, Street, SegmentID) %>%
-#  summarise()
-
-#count the number of trips on each Street segment
-#count.Aug <- ls.Aug %>%
-#  group_by(Street, SegmentID) %>%
-#  summarise(Count = n())
-
-#merge the info that whether the road is bikelane or not
-#keep the order to makesure sf
-#info.Aug <- merge(bike20d_buffer, count.Aug, all.x = T)
-
-
-
-#find out the number of trips on bikelanes
-#bikelanes <- bike20d_buffer %>% filter(BikeLane == "1"| BikeLane == "2" | BikeLane == "5" | BikeLane == "9" |
-#                                         BikeLane == '4' | BikeLane == '8' | BikeLane == '10')
-# bike.Aug <- merge(bikelanes, count.Aug, all.x = T)
-
 # collect bike lane information
 bikelanes <- bike20d_buffer %>% filter(bikeLaneLv!="noBikeLane")
 
-
-#find out the number of trips in each neighborhood
-bike.nh <- st_join(info.Aug, neighborhood %>% st_transform(st_crs(info.Aug)), join=st_intersects, left=TRUE)
-
-bike.nh <- bike.nh %>%
-  group_by(ntaname) %>%
-  summarise(nhCount = sum(Count))
 
 ####=====Feature Engineering========####
 #change projection
 info.Aug <- info.Aug %>% st_transform('ESRI:102711')
 bike20d_buffer <- bike20d_buffer %>% st_transform('ESRI:102711')
-# bike.Aug <- bike.Aug %>% st_transform('ESRI:102711')
 bikelanes <- bikelanes %>% st_transform('ESRI:102711')
-bike.nh <- bike.nh %>% st_transform('ESRI:102711')
 station <- station %>% st_transform('ESRI:102711')
 
 
 ###Distance to nearest bikelanes
 info.Aug <- info.Aug %>%
   mutate(dist.lane = nn_function(st_coordinates(st_centroid(info.Aug$geometry)), st_coordinates(st_centroid(bikelanes$geometry)), 1))
-
-
-#The number of biketrips in each neighborhood
-# THIS INCREASES RECORDS BY 20,000
-#info.Aug <- st_join(info.Aug, bike.nh, join=st_intersects, left=TRUE)
 
 
 
@@ -299,7 +250,6 @@ info.Aug <- info.Aug %>%
                                  st_coordinates(extent.point), 1))
 
 #fixNAs
-
 #find averages
 median_lanes <- median(info.Aug$Number_Tra, na.rm=TRUE)
 median_width<- median(info.Aug$StreetWidt, na.rm = TRUE)
@@ -310,10 +260,9 @@ info.Aug$Number_Tra[is.na(info.Aug$Number_Tra)] <- median_lanes
 info.Aug$StreetWidt[is.na(info.Aug$StreetWidt)] <- median_width
 info.Aug$POSTED_SPE[is.na(info.Aug$POSTED_SPE)] <- median_speed
 info.Aug$TRUCK_ROUT[is.na(info.Aug$TRUCK_ROUT)] <- 0
-#info.Aug$nhCount[is.na(info.Aug$nhCount)] <- 0
 
 
-#### census variables ####
+#### Census Features ####
 #variables available at: https://api.census.gov/data/2019/acs/acs5/variables.html
 v19 <- load_variables(2019, "acs5", cache = TRUE)
 
@@ -375,7 +324,6 @@ rename_census_cols <- function(x){
 }
 
 #set census api key
-#REMEMBER NOT TO COMMIT THIS
 census_key <- 'a7e8cf22d61cfaeca8e855304a07e8f35b139d06'
 census_api_key(census_key, overwrite = TRUE, install = TRUE)
 
@@ -393,18 +341,6 @@ Census_raw <- get_acs(geography = "tract",
                 census_colNames) %>% 
   st_transform(2263)
 
-#extent<-st_transform(extent, crs=2263)
-
-#no?
-#Census_geoinfo <- Census_raw %>%
-#  dplyr::select(GEOID, geometry) %>%
-#  st_join(extent) %>% na.omit() %>% dplyr::select(GEOID,geometry)
-
-# NO? extract centroid of each census tract
-#Census_geoinfo <- Census_geoinfo %>% 
-#  mutate(centroid_X = st_coordinates(st_centroid(Census_geoinfo))[, 1],
-#         centroid_Y = st_coordinates(st_centroid(Census_geoinfo))[, 2])
-
 Census_raw <- Census_raw%>%
   st_transform(2263)%>%
   mutate(AREA=st_area(geometry))
@@ -412,7 +348,7 @@ Census_raw <- Census_raw%>%
   st_transform(2263)%>%
   mutate(sq_mi=AREA/27878400)
 
-#deal with NAs here
+#fix NAs 
 colSums(is.na(Census_raw))
 
 median_age<-median(Census_raw$MedianAge, na.rm = TRUE)
@@ -438,7 +374,6 @@ Census <- Census_raw %>%
          pVacant = VacUnits / TotUnits)
 
 #fix weird values in calculated vars
-
 #set infinity values to NA
 Census_geo<-Census%>%
   select(GEOID)
@@ -475,26 +410,16 @@ Census_fix$pVacant[is.na(Census_fix$pVacant)] <- median_vacant
 #if % greater than 1, set value equal to median
 Census_fix$pSubway[Census_fix$pSubway>1.1] <- median_subway
 
-#weird_subway<-subset(Census_fix, pSubway>1)
-
 #get geometry back
 Census<- inner_join(Census_geo, Census_fix)
 
 #select the variables of interest
 Census <- Census %>%
-  select(GEOID, TotPop, PopDens, MedianAge, MedHHInc, AvgHHSize,
+  select(GEOID, sq_mi, TotPop, PopDens, MedianAge, MedHHInc, AvgHHSize,
                 pWhite, pLatino, MedRent, Mean_Commute_Time, pSubway, pDrive, pBike, pNoVeh,
                 pQuarters, pRenters, pVacant)
 
 
-
-#tract_list <- Census_geoinfo$GEOID
-
-#Census_ct <- Census %>%
-#  filter(Census$GEOID %in% tract_list) %>%
-#  st_set_geometry(NULL)
-
-#Census_ct
 
 #join with info.Aug
 Census<-st_transform(Census, crs=st_crs(info.Aug))
@@ -518,19 +443,178 @@ info.Aug_census$pQuarters[is.na(info.Aug_census$pQuarters)] <- 0
 info.Aug_census$pRenters[is.na(info.Aug_census$pRenters)] <- 0
 info.Aug_census$pVacant[is.na(info.Aug_census$pVacant)] <- 0
 
+info.Aug<-info.Aug_census
 
+#### Environment Features ####
+
+#make new dataset to play with
+info.Aug_env<- info.Aug
+
+#sidewalk cafes
+sidewalk_cafe<- read.csv('https://data.cityofnewyork.us/resource/qcdj-rwhu.csv?$limit=2000')
+sidewalk_cafe<-subset(sidewalk_cafe, lic_status =='Active')
+sidewalk_cafe <- st_as_sf(sidewalk_cafe, coords=c('longitude', 'latitude'), crs=4326)
+
+
+#nn version
+sidewalk_cafe<-st_transform(sidewalk_cafe, crs=st_crs(info.Aug))
+
+info.Aug_env<- info.Aug_env %>%
+  mutate(
+    sidewalk_caf_nn1 = nn_function(st_coordinates(st_centroid(info.Aug_env)), st_coordinates(sidewalk_cafe), 1),
+    sidewalk_caf_nn2 = nn_function(st_coordinates(st_centroid(info.Aug_env)), st_coordinates(sidewalk_cafe), 2),
+    sidewalk_caf_nn3 = nn_function(st_coordinates(st_centroid(info.Aug_env)), st_coordinates(sidewalk_cafe), 3))
+
+
+
+#big parks
+parks<- st_read('for_basemap/geo_export_8469ffba-1951-4e52-916c-c9c4dfa54c18.shp')
+big_parks<-subset(parks, acres>100)
+
+big_parks<-st_transform(big_parks, crs=st_crs(info.Aug_env))
+
+info.Aug_env<- info.Aug_env %>% 
+  mutate(bigPark = lengths(st_within(geometry, big_parks)))
+info.Aug_env$bigPark[info.Aug_env$bigPark==2]<-1
+
+
+#greenway
+info.Aug_env$isGreenway<-ifelse(grepl('greenway', info.Aug_env$Street, ignore.case=T), 1, 0)
+
+#distance to subway stations
+subway<-st_read('stops_nyc_subway_may2019.shp')
+subway<-st_transform(subway, st_crs(info.Aug))
+
+
+info.Aug_env<- info.Aug_env %>%
+  mutate(
+    subway_nn1 = nn_function(st_coordinates(st_centroid(info.Aug_env)), st_coordinates(subway), 1),
+    subway_nn2 = nn_function(st_coordinates(st_centroid(info.Aug_env)), st_coordinates(subway), 2),
+    subway_nn3 = nn_function(st_coordinates(st_centroid(info.Aug_env)), st_coordinates(subway), 3),
+    subway_nn4 = nn_function(st_coordinates(st_centroid(info.Aug_env)), st_coordinates(subway), 4),
+    subway_nn5 = nn_function(st_coordinates(st_centroid(info.Aug_env)), st_coordinates(subway), 5))
+
+
+#reset whole dataset to include these features
+info.Aug<-info.Aug_env
+
+# jobs
+jobs_mh<-st_read('LODES_WAC/manhattan/points_2018.shp')
+jobs_bx<-st_read('LODES_WAC/bronx/points_2018.shp')
+jobs_bk<-st_read('LODES_WAC/brooklyn/points_2018.shp')
+jobs_qn<-st_read('LODES_WAC/queens/points_2018.shp')
+
+jobs<-rbind(jobs_mh, jobs_bx, jobs_bk, jobs_qn)
+
+WAC <- jobs %>% 
+  dplyr::select(id, c000) %>% 
+  mutate(GEOID = as.character(substr(id, 1, 11))) %>% 
+  group_by(GEOID) %>% 
+  summarize(jobs_in_tract = sum(c000, na.rm = TRUE)) %>% 
+  filter(GEOID %in% info.Aug$GEOID)
+
+WAC<-st_set_geometry(WAC, NULL)
+
+info.Aug_jobs<- left_join(info.Aug, WAC, left=TRUE)
+
+#get rid of NAs
+colSums(is.na(info.Aug_jobs))
+median_jobs <- median(info.Aug_jobs$jobs_in_tract, na.rm=TRUE)
+info.Aug_jobs$jobs_in_tract[is.na(info.Aug_jobs$jobs_in_tract)] <- median_jobs
+
+info.Aug<-info.Aug_jobs
+
+#### OSM Features ####
+info.Aug_osm<-info.Aug
+
+#retail
+extent<- st_transform(extent, st_crs(info.Aug))
+
+retail <- opq ("New York City USA") %>%
+  add_osm_feature(key = 'shop') %>%
+  osmdata_sf(.)
+
+retail <- st_geometry(retail$osm_points) %>%
+  st_transform(st_crs(info.Aug)) %>%
+  st_sf() %>%
+  st_intersection(extent) %>%
+  mutate(Legend = 'Retail') %>%
+  dplyr::select(Legend, geometry)
+
+#office
+office <- opq ("New York City USA") %>%
+  add_osm_feature(key = 'office') %>%
+  osmdata_sf(.)
+
+office <- st_geometry(office$osm_points) %>%
+  st_transform(st_crs(info.Aug)) %>%
+  st_sf() %>%
+  st_intersection(extent) %>%
+  mutate(Legend = 'Office') %>%
+  dplyr::select(Legend, geometry)
+
+#add nn features
+info.Aug_osm<- info.Aug_osm %>%
+  mutate(
+    office_nn1 = nn_function(st_coordinates(st_centroid(info.Aug_osm)), st_coordinates(office), 1),
+    office_nn2 = nn_function(st_coordinates(st_centroid(info.Aug_osm)), st_coordinates(office), 2),
+    office_nn3 = nn_function(st_coordinates(st_centroid(info.Aug_osm)), st_coordinates(office), 3),
+    office_nn4 = nn_function(st_coordinates(st_centroid(info.Aug_osm)), st_coordinates(office), 4),
+    office_nn5 = nn_function(st_coordinates(st_centroid(info.Aug_osm)), st_coordinates(office), 5))
+
+info.Aug_osm<- info.Aug_osm %>%
+  mutate(
+    retail_nn1 = nn_function(st_coordinates(st_centroid(info.Aug_osm)), st_coordinates(retail), 1),
+    retail_nn2 = nn_function(st_coordinates(st_centroid(info.Aug_osm)), st_coordinates(retail), 2),
+    retail_nn3 = nn_function(st_coordinates(st_centroid(info.Aug_osm)), st_coordinates(retail), 3),
+    retail_nn4 = nn_function(st_coordinates(st_centroid(info.Aug_osm)), st_coordinates(retail), 4),
+    retail_nn5 = nn_function(st_coordinates(st_centroid(info.Aug_osm)), st_coordinates(retail), 5))
+
+#add density features
+# retail
+retail_ct <- st_join(info.Aug_osm, retail) %>%
+  group_by(GEOID, sq_mi) %>%
+  summarise(count_retail= n())
+
+retail_ct$density_retail <- retail_ct$count_retail/retail_ct$sq_mi
+
+# office
+office_ct <- st_join(info.Aug_osm, office) %>%
+  group_by(GEOID, sq_mi) %>%
+  summarise(count_office= n())
+
+office_ct$density_office <- office_ct$count_office/office_ct$sq_mi
+
+#join back to info.Aug
+retail_ct<- retail_ct%>%
+  select(GEOID, count_retail, density_retail)%>%
+  st_set_geometry(NULL)
+
+office_ct<- office_ct%>%
+  select(GEOID, count_office, density_office)%>%
+  st_set_geometry(NULL)
+
+info.Aug_retail<- left_join(info.Aug_osm, retail_ct)
+info.Aug_office<- left_join(info.Aug_retail, office_ct)
+
+info.Aug<-info.Aug_office
+
+#fix NAs
+colSums(is.na(info.Aug))
+median_lanes <- median(info.Aug$Number_Tra, na.rm=TRUE)
+
+median_retail<-median(info.Aug$density_retail, na.rm=TRUE)
+median_office<-median(info.Aug$density_retail, na.rm=TRUE)
+
+info.Aug$density_retail[is.na(info.Aug$density_retail)] <- median_retail
+info.Aug$density_office[is.na(info.Aug$density_office)] <- median_office
 
 
 #### Correlations ####
-#corplot of numeric variables against each other
-# create a correlation matrix of all numerical variables
-info.Aug
+#correlation of numeric independent variables against each other
 numericVars <- 
-  select_if(st_drop_geometry(info.Aug_census[, -c(1:2, 30)]), is.numeric) %>% 
+  select_if(st_drop_geometry(info.Aug[, -c(1:2, 30)]), is.numeric) %>% 
   na.omit()
-
-
-glimpse(numericVars)
 
 corr<-round(cor(numericVars), 1)
 p.mat<- cor_pmat(numericVars)
@@ -549,18 +633,6 @@ st_drop_geometry(info.Aug) %>%
   geom_point(size = .5, shape=20, alpha = 0.5) + 
   facet_wrap(~Variable, ncol = 3, scales = "free") +
   labs(caption = "Count as a Function Some Variables")
-
-#variables we're using
-glimpse(info.Aug)
-st_drop_geometry(info.Aug) %>% 
-  dplyr::select(Count, bikeLaneLv, 
-                MinorSnowRoute, TRUCK_ROUT,
-                trailOrNot) %>%
-  gather(Variable, Value, -Count) %>% 
-  ggplot(aes(Value, Count)) +
-  geom_point(size = .5, shape=20, alpha = 0.5) + 
-  facet_wrap(~Variable, ncol = 2, scales = "free") +
-  labs(caption = "Count as a Function Some Factor Variables")
 
 #boxplots
 boxplot(Count~MinorSnowRoute,
@@ -581,16 +653,8 @@ boxplot(Count~Number_Tra,
 boxplot(Count~citibike.Buffer_small, 
         data=info.Aug)
 
-ggplot()+
-  geom_point(data=info.Aug, aes(x=dist.lane, y=Count), alpha=0.2)+
-  geom_smooth(data= info.Aug, aes(x=dist.lane, y=Count), method='lm')
 
-ggplot()+
-  geom_point(data=info.Aug, aes(x=XFrom, y=Count), alpha=0.2)+
-  geom_smooth(data= info.Aug, aes(x=XFrom, y=Count), method='lm')
-
-
-#matrix of cor plots: LION at citibike vars
+#matrix of cor plots: LION and citibike vars
 correlation.long <-
   select(st_drop_geometry(info.Aug), c(Number_Tra, POSTED_SPE, StreetWidt, dist.lane,
                                        citibike.Buffer_small,
@@ -614,10 +678,6 @@ ggplot(correlation.long, aes(Value, Count)) +
 #matrix of cor plots: census variables
 colSums(is.na(info.Aug_census))
 
-#TotPop, PopDens, MedianAge, MedHHInc, AvgHHSize,
-#pWhite, pLatino, MedRent, Mean_Commute_Time, pSubway, pDrive, pNoVeh,
-#pQuarters, pRenters, pVacant
-
 correlation.long_c <-
   select(st_drop_geometry(info.Aug_census), c(MedHHInc, AvgHHSize,
                                               pWhite, pLatino, MedRent, Mean_Commute_Time, pSubway, pDrive, pNoVeh, pBike,
@@ -638,6 +698,51 @@ ggplot(correlation.long_c, aes(Value, Count)) +
   facet_wrap(~Variable, ncol = 2, scales = "free") +
   labs(title = "Count of trips as a function of census features")
 
+#matrix of corplots: environment vars
+correlation.long_e <-
+  select(st_drop_geometry(info.Aug), c(sidewalk_caf_nn1, sidewalk_caf_nn2, sidewalk_caf_nn3,
+                                              sidewalk_caf.Buffer,
+                                           jobs_in_tract, 
+                                       subway_nn1, subway_nn2, subway_nn3, subway_nn4, subway_nn5,
+                                              Count)) %>%
+  gather(Variable, Value, -Count)
+
+correlation.cor_e <-
+  correlation.long_e %>%
+  group_by(Variable) %>%
+  summarize(correlation = cor(Value, Count, use = "complete.obs"))
+
+
+ggplot(correlation.long_e, aes(Value, Count)) +
+  geom_point(size = 0.1) +
+  geom_text(data = correlation.cor_e, aes(label = paste("r =", round(correlation, 2))),
+            x=-Inf, y=Inf, vjust = 1.5, hjust = -.1, color='blue') +
+  geom_smooth(method = "lm", se = FALSE, colour = "blue") +
+  facet_wrap(~Variable, ncol = 2, scales = "free") +
+  labs(title = "Count of trips as a function of environmental features")
+
+#matrix of corplots: Open Street Map vars
+correlation.long_osm <-
+  select(st_drop_geometry(info.Aug), c(retail_nn1, retail_nn2,retail_nn3,retail_nn4,retail_nn5,
+                                       office_nn1, office_nn2, office_nn3, office_nn4, office_nn5,
+                                       density_retail, density_office,
+                                       Count)) %>%
+  gather(Variable, Value, -Count)
+
+correlation.cor_osm <-
+  correlation.long_osm %>%
+  group_by(Variable) %>%
+  summarize(correlation = cor(Value, Count, use = "complete.obs"))
+
+
+ggplot(correlation.long_osm, aes(Value, Count)) +
+  geom_point(size = 0.1) +
+  geom_text(data = correlation.cor_osm, aes(label = paste("r =", round(correlation, 2))),
+            x=-Inf, y=Inf, vjust = 1.5, hjust = -.1, color='blue') +
+  geom_smooth(method = "lm", se = FALSE, colour = "blue") +
+  facet_wrap(~Variable, ncol = 2, scales = "free") +
+  labs(title = "Count of trips as a function of OpenStreetMap features")
+
 #check for multicolinearity among census variables
 glimpse(info.Aug_census)
 mc_check<-info.Aug_census[,35:44]
@@ -645,14 +750,7 @@ mc_check<-st_set_geometry(mc_check, NULL)
 glimpse(mc_check)
 cor2pcor(cov(mc_check))
 
-info.Aug<-info.Aug_census
-
 ####====Regression====####
-glimpse(info.Aug)
-
-info.Aug$Centroid <- st_centroid(info.Aug$geometry)
-st_coordinates(info.Aug$Centroid)
-
 #split data into train and test
 ## training set = 75% of the sample
 smp_size <- floor(0.75 * nrow(info.Aug))
@@ -668,13 +766,16 @@ test <- info.Aug[-train_ind, ]
 #Make the regression
 reg_basic<-lm(Count ~ bikeLaneLv + dist.lane + Number_Tra + StreetWidt + 
                 + TRUCK_ROUT + citibike.Buffer_small + isMH +
-                pWhite + MedRent + pNoVeh + pBike + pSubway + pDrive, data=train)
+                pWhite + MedRent + pNoVeh + pSubway + 
+                sidewalk_caf_nn3 + jobs_in_tract + bigPark + isGreenway + subway_nn5
+                , data=train)
 summary(reg_basic)
 
-#eliminated POSTED_SPE
 reg_compare<-lm(Count ~ bikeLaneLv + dist.lane + Number_Tra + StreetWidt + 
                   + TRUCK_ROUT + citibike.Buffer_small + isMH +
-                  pWhite + MedRent + pNoVeh + pBike + pSubway + pDrive, data=train)
+                  pWhite + MedRent + pNoVeh + pSubway + 
+                  sidewalk_caf_nn3  + bigPark + isGreenway + subway_nn5 +
+                  jobs_in_tract + office_nn5, data=train)
 summary(reg_compare)
 
 
@@ -693,66 +794,20 @@ perf_compare <-data.frame(
   R2 = R2(predictions_comp, test$Count)
 )
 
-#test$pred_1 <- reg_basic%>%predict(test)
-#test$pred_2<- reg_compare%>%predict(test)
 
-#test_perform1 <- test %>% mutate(
-#  Error1 = pred_1 - Count,
-#  AbsError1 = abs(pred_1 - Count),
-#  APE1 = ((abs(pred_1 - Count))/pred_1)
-#)
-
-#ggplot()+geom_histogram(data = info.Aug_test,aes(AbsError),binwidth = 10)
-
-#stargazer(reg, type = "html",
-#          title = "Regression results",
-#          single.row = TRUE)
-
-
-#plotting residuals some more
-info.Aug$res_reg1 <- residuals(reg)
-info.Aug$fitted_reg1<- fitted(reg)
-
-ggplot()+ 
-  geom_point(aes(x = obs, y = pred))
-
-ggplot()+
-  geom_sf(data=info.Aug, aes(color=res_reg1))
-
-info.Aug$res_reg2 <- residuals(reg_2)
-info.Aug$fitted_reg2<- fitted(reg_2)
-
-#select only those with higher value residuals
-high_err<- subset(info.Aug, res_reg1>10)
-
-ggplot()+
-  geom_sf(data=high_err, aes(color=res_reg1), size = 1.2)
-
-ggplot(info.Aug, aes(x=res_reg1))+
-  geom_density()+
-  labs(title='Density of Residuals',
-       xlab='Residual')
-
-hist(info.Aug$res_reg1, col='skyblue3', breaks = 50, main='Histogram of Residuals')
-
-
-#### more detailed modeling - train/test and errors ####
-# Regression  
-reg_all <- lm(Count ~ bikeline + dist.lane + C2, data = st_drop_geometry(train))
-
-summary(reg_all)
-
+#### Explore Errors ####
+#### add predictions and errors to df ####
 # test set prediction 
-reg_all_predict <- predict(reg_all, newdata = test)
+reg_predict <- predict(reg_compare, newdata = test)
 
 #training set prediction
-reg_all_predict_train <- predict(reg_all, newdata = train)
+reg_predict_train <- predict(reg_compare, newdata = train)
 
 # training MAE
-rmse.train <- caret::MAE(reg_all_predict_train, train$Count)
+rmse.train <- caret::MAE(reg_predict_train, train$Count)
 
 # test MAE
-rmse.test  <- caret::MAE(reg_all_predict, test$Count)
+rmse.test  <- caret::MAE(reg_predict, test$Count)
 
 test <- cbind(test, reg_all_predict)
 train <- cbind(train, reg_all_predict_train)
@@ -761,17 +816,17 @@ train <- cbind(train, reg_all_predict_train)
 #add error types for each prediction
 test <-
   test %>%
-  mutate(Count.Predict = reg_all_predict,
-         Count.Error = reg_all_predict - Count,
-         Count.AbsError = abs(reg_all_predict - Count),
-         Count.APE = (abs(reg_all_predict - Count)) / Count)
+  mutate(Count.Predict = reg_predict,
+         Count.Error = reg_predict - Count,
+         Count.AbsError = abs(reg_predict - Count),
+         Count.APE = (abs(reg_predict - Count)) / Count)
 
 train <-
   train %>%
-  mutate(Count.Predict = reg_all_predict_train,
-         Count.Error = reg_all_predict_train - Count,
-         Count.AbsError = abs(reg_all_predict_train - Count),
-         Count.APE = (abs(reg_all_predict_train - Count)) / Count)
+  mutate(Count.Predict = reg_predict_train,
+         Count.Error = reg_predict_train - Count,
+         Count.AbsError = abs(reg_predict_train - Count),
+         Count.APE = (abs(reg_predict_train - Count)) / Count)
 
 MAPE_Train <- mean(train$Count.APE)
 MAPE_Test <- mean(test$Count.APE)
@@ -784,18 +839,20 @@ colnames(table4.1.2) <- c("MAE", "MAPE")
 # show table
 table4.1.2 %>% kable(caption = "Table 4.1.2 - Training and Testing MAE and MAPE")
 
-# true value vs. predicted value 
-preds.train <- data.frame(pred   = reg_all_predict_train,
+#### true value vs. predicted value ####
+preds.train <- data.frame(pred   = reg_predict_train,
                           actual = train$Count,
                           source = "training data")
-preds.test  <- data.frame(pred   = reg_all_predict,
+preds.test  <- data.frame(pred   = reg_predict,
                           actual = test$Count,
                           source = "testing data")
 preds <- rbind(preds.train, preds.test)
 
 #plot of predicted vs observed
+#I set the xlim to 0,200 because our predictions are very low
 ggplot(preds, aes(x = pred, y = actual, color = source)) +
   geom_point() +
+  xlim(0,200)+
   geom_smooth(method = "lm", color = "green") +
   geom_abline(color = "orange") +
   coord_equal() +
@@ -809,24 +866,42 @@ ggplot(preds, aes(x = pred, y = actual, color = source)) +
     legend.position = "none"
   )
 
-#skipping cross validation
+#### skipping cross validation ####
 
-#spatial distribution of errors
-glimpse(test)
-# plot errors from the test set on a map
+#### spatial distribution of errors ####
+# map errors from the test set
 ggplot() +
   geom_sf(data = test, aes(colour = Count.Error),
           show.legend = "point", size = 1) +
-  #scale_colour_manual(values = palette5,
-  #                    labels=qBr(test,"SalePrice.Error"),
-  #                    name="Quintile Breaks\nof Abs Error") +
   labs(title="Spatial Distribution of Residuals from Test Set", 
        subtitle = "Both over-prediction and under-prediction included",
        caption = "Spatial Distribution of Residuals from Test Set")
 
-#testing residuals for spatial lag with moran's i
-# 4.3.2 Moran Test and Spatial Lag
-#prices
+# map large errors
+high_err_test<- subset(test, test$Count.AbsError>100)
+high_err_train<- subset(train, Count.AbsError>100)
+
+med_err_test<- subset(test, test$Count.AbsError>10)
+med_err_train<- subset(train, Count.AbsError>10)
+
+boroughs_clip<-st_intersection(borough, extent)
+
+ggplot()+
+  geom_sf(data=boroughs_clip, fill='white', color='white')+
+  geom_sf(data=high_err_test, aes(color=Count.Error), size=0.7)+
+  geom_sf(data=high_err_train, aes(color=Count.Error), size =0.7)+
+  scale_color_continuous(type='viridis')+
+  labs(title='Residuals Larger than 100')
+
+ggplot()+
+  geom_sf(data=boroughs_clip, fill='white', color='white')+
+  geom_sf(data=med_err_test, aes(color=Count.Error), size=0.7)+
+  geom_sf(data=med_err_train, aes(color=Count.Error), size =0.7)+
+  scale_color_continuous(type='viridis')+
+  labs(title='Residuals Larger than 10')
+
+#see it there is spatial autocorrelation in the errors
+#coords
 coords <- st_coordinates(st_centroid(info.Aug))
 
 # k nearest neighbors, k= 5
@@ -864,35 +939,3 @@ error_lag_plot
 
 ggplotly(error_lag_plot)
 
-#mapping errors
-glimpse(test)
-high_err_test<- subset(test, test$Count.AbsError>100)
-high_err_train<- subset(train, Count.AbsError>100)
-
-med_err_test<- subset(test, test$Count.AbsError>10)
-med_err_train<- subset(train, Count.AbsError>10)
-
-boroughs_clip<-st_intersection(borough, extent)
-
-ggplot()+
-  geom_sf(data=boroughs_clip, fill='white', color='white')+
-  geom_sf(data=high_err_test, aes(color=Count.Error), size=0.7)+
-  geom_sf(data=high_err_train, aes(color=Count.Error), size =0.7)+
-  scale_color_continuous(type='viridis')+
-  labs(title='Residuals Larger than 100')
-
-ggplot()+
-  geom_sf(data=boroughs_clip, fill='white', color='white')+
-  geom_sf(data=med_err_test, aes(color=Count.Error), size=0.7)+
-  geom_sf(data=med_err_train, aes(color=Count.Error), size =0.7)+
-  scale_color_continuous(type='viridis')+
-  labs(title='Residuals Larger than 10')
-
-ggplot()+
-  geom_sf(data=boroughs_clip, fill='white', color='white')+
-  geom_sf(data=info.Aug, aes(color=res_reg1), size=0.5)+
-  scale_color_continuous(type='viridis')+
-  labs(title='All Residuals')
-
-
-glimpse(info.Aug)

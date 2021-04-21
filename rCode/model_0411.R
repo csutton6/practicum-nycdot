@@ -993,3 +993,11 @@ ggplot()+
 glimpse(info.Aug)
 
 
+#buffer version (not working)
+#info.Aug_env$sidewalk_caf.Buffer =
+#   st_buffer(info.Aug_env, 500) %>% 
+#   aggregate(mutate(sidewalk_cafe, counter = 1),., sum) %>%
+#   pull(counter)
+#info.Aug_env$sidewalk_caf.Buffer[is.na(info.Aug_env$sidewalk_cafe.Buffer)] <- 0
+
+
