@@ -1,9 +1,10 @@
 setwd('C:/Users/katee/Box Sync/Practicum/shp/')
 setwd('C:/Users/xinti/Box/MUSA_800_Practicum/Data')
+
 #avoid scientific notation
 options(scipen = 999)
 
-install.packages('ranger')
+install.packages('corpcor')
 
 #### packages ####
 library(tidyverse)
@@ -21,6 +22,8 @@ library(plotly)
 library(car)
 library(ranger)
 library(tidycensus)
+library(corpcor)
+library(caret)
 
 #### palettes etc ####
 palette5 <- c("#25CB10", "#5AB60C", "#8FA108",   "#C48C04", "#FA7800")
@@ -102,9 +105,8 @@ neighborhood <- neighborhood[extent,]
 
 ##=====Roads and Bikelanes====##
 #import Lion bikelane data
-bike20d_buffer <- st_read("lion_buffer15/lion_buffer15.shp") %>%
+bike20d_buffer <- st_read("lion2020d_buffer15.shp") %>%
   st_transform(st_crs(Aug_pnts))
-
 bike20d_buffer <- st_read("Infrastructure/Lion/lion2020d_buffer15.shp") %>%
   st_transform(st_crs(Aug_pnts))
 
@@ -130,23 +132,6 @@ bike20d_buffer_drop<- subset(bike20d_buffer, RW_TYPE !=12 &
                                SegmentTyp !='F'&
                                SegmentTyp !='T')
 
-#highways
-highways<- subset(bike20d_buffer, RW_TYPE==2 | SegmentTyp=='E')
-
-#divided streets
-divided<-subset(bike20d_buffer, SegmentTyp=='G' | SegmentTyp=='R' | SegmentTyp=='T' | SegmentTyp=='C')
-divided_better<-subset(bike20d_buffer, SegmentTyp=='R' | SegmentTyp=='T' |SegmentTyp=='C')
-mapview(divided_better)
-
-#tunnels
-tunnels<- subset(bike20d_buffer, RW_TYPE==4)
-mapview(tunnels)
-
-#path/trail
-trail<- subset(bike20d_buffer, RW_TYPE==6)
-mapview(trail)
-
-mapview(bike20d_buffer_drop)
 
 #add a highway, trail, and tunnel 
 bike20d_buffer_drop <- bike20d_buffer_drop %>% 
@@ -167,7 +152,6 @@ bike20d_buffer_drop <- bike20d_buffer_drop %>%
 
 bike20d_buffer<- bike20d_buffer_drop
 bike20d_buffer <- distinct(bike20d_buffer,SegmentID,.keep_all = T)
-# ggplot()+geom_sf(data = bike20d_buffer %>% st_as_sf(),aes(color = "red"))
 
 #select useful column
 bike20d_buffer <- bike20d_buffer %>%
@@ -177,13 +161,10 @@ bike20d_buffer <- bike20d_buffer %>%
          StreetWidt, StreetWi_1, StreetWi_2, TRUCK_ROUT, POSTED_SPE, trailOrNot, 
          bikeLaneLv, bridgeOrNot, geometry)
 
-glimpse(bike20d_buffer)
 
 #### Calculating Ridership ####
-#from xintian
 ######################### Calculate ridership #####################
 # clip pnts outside of the road buffers
-
 bike20d_buffer<- st_transform(bike20d_buffer, crs=4326)
 
 points_clean <- Aug_pnts[bike20d_buffer,] %>% 
@@ -209,35 +190,38 @@ info.Aug <- bike20d_buffer %>%
   merge(.,tripCount,by = "SegmentID",all.x = T) %>% 
   rename(Count=tripCount) 
 
+#set NA Count equal to zero
+info.Aug$Count[is.na(info.Aug$Count)] <- 0
+
 
 
 #old code
 #Find out the points inside bikelanes
-Aug.in <- Aug_pnts[bike20d_buffer,]
+#Aug.in <- Aug_pnts[bike20d_buffer,]
 
 #allocate street names
-Aug.in <- st_join(Aug.in, bike20d_buffer, join=st_intersects, left=TRUE)
+#Aug.in <- st_join(Aug.in, bike20d_buffer, join=st_intersects, left=TRUE)
 
 #Group Points inside Same Street and Same ID as linestring
-ls.Aug <- Aug.in %>%
-  st_drop_geometry() %>%
-  group_by(index, Street, SegmentID) %>%
-  summarise()
+#ls.Aug <- Aug.in %>%
+#  st_drop_geometry() %>%
+#  group_by(index, Street, SegmentID) %>%
+#  summarise()
 
 #count the number of trips on each Street segment
-count.Aug <- ls.Aug %>%
-  group_by(Street, SegmentID) %>%
-  summarise(Count = n())
+#count.Aug <- ls.Aug %>%
+#  group_by(Street, SegmentID) %>%
+#  summarise(Count = n())
 
 #merge the info that whether the road is bikelane or not
 #keep the order to makesure sf
-info.Aug <- merge(bike20d_buffer, count.Aug, all.x = T)
+#info.Aug <- merge(bike20d_buffer, count.Aug, all.x = T)
 
 
 
 #find out the number of trips on bikelanes
-bikelanes <- bike20d_buffer %>% filter(BikeLane == "1"| BikeLane == "2" | BikeLane == "5" | BikeLane == "9" |
-                                         BikeLane == '4' | BikeLane == '8' | BikeLane == '10')
+#bikelanes <- bike20d_buffer %>% filter(BikeLane == "1"| BikeLane == "2" | BikeLane == "5" | BikeLane == "9" |
+#                                         BikeLane == '4' | BikeLane == '8' | BikeLane == '10')
 # bike.Aug <- merge(bikelanes, count.Aug, all.x = T)
 
 # collect bike lane information
@@ -250,11 +234,6 @@ bike.nh <- st_join(info.Aug, neighborhood %>% st_transform(st_crs(info.Aug)), jo
 bike.nh <- bike.nh %>%
   group_by(ntaname) %>%
   summarise(nhCount = sum(Count))
-
-glimpse(bike.nh)
-
-
-
 
 ####=====Feature Engineering========####
 #change projection
@@ -272,112 +251,10 @@ info.Aug <- info.Aug %>%
 
 
 #The number of biketrips in each neighborhood
-info.Aug <- st_join(info.Aug, bike.nh, join=st_intersects, left=TRUE)
+# THIS INCREASES RECORDS BY 20,000
+#info.Aug <- st_join(info.Aug, bike.nh, join=st_intersects, left=TRUE)
 
 
-#### NOT DOING THIS RN ####
-##Biketrips at closest roads
-
-#function to get cloest idx
-# nn_idx<- nn_function <- function(measureFrom,measureTo,k) {
-#   measureFrom_Matrix <- as.matrix(measureFrom)
-#   measureTo_Matrix <- as.matrix(measureTo)
-#   nn <-   
-#     get.knnx(measureTo, measureFrom, k)$nn.index[,k]
-#   return(nn)  
-# }
-
-#N1
-#get the index
-# info.Aug <- info.Aug %>%
-#   mutate(nnidx = nn_idx(st_coordinates(st_centroid(info.Aug$geometry)),
-#                         st_coordinates(st_centroid(bike.Aug$geometry)), 1))
-
-
-#extract count based on index
-# for (i in 1:nrow(info.Aug)) {
-#   info.Aug$n1Count[i] =bike.Aug[info.Aug$nnidx[i],]$Count
-# }
-
-#N2
-#get the index
-# info.Aug <- info.Aug %>%
-#   mutate(nnidx2 = nn_idx(st_coordinates(st_centroid(info.Aug$geometry)),
-#                          st_coordinates(st_centroid(bike.Aug$geometry)), 2))
-
-
-# #extract count based on index
-# for (i in 1:nrow(info.Aug)) {
-#   info.Aug$n2Count[i] =bike.Aug[info.Aug$nnidx2[i],]$Count
-# }
-# 
-# 
-# #N3
-# #get the index
-# info.Aug <- info.Aug %>%
-#   mutate(nnidx3 = nn_idx(st_coordinates(st_centroid(info.Aug$geometry)),
-#                          st_coordinates(st_centroid(bike.Aug$geometry)), 3))
-# 
-# #extract count based on index
-# for (i in 1:nrow(info.Aug)) {
-#   info.Aug$n3Count[i] =bike.Aug[info.Aug$nnidx3[i],]$Count
-# }
-
-
-# #### INCLUDED THIS ####
-# #The number of biketrips in each neighborhood
-# info.Aug <- st_join(info.Aug, bike.nh, join=st_intersects, left=TRUE)
-# 
-# 
-# #### NOT INCLUDED: C2 ####
-# #the number of biketrips on the surrounding  (closest) 2 roads
-# info.Aug2 <- info.Aug
-# 
-# #C1
-# #get the index
-# info.Aug <- info.Aug %>%
-#   mutate(cidx = nn_idx(st_coordinates(st_centroid(info.Aug$geometry)),
-#                        st_coordinates(st_centroid(info.Aug2$geometry)), 1))
-# #C2
-# info.Aug <- info.Aug %>%
-#   mutate(cidx2 = nn_idx(st_coordinates(st_centroid(info.Aug$geometry)),
-#                         st_coordinates(st_centroid(info.Aug2$geometry)), 2))
-# 
-# #extract count based on index
-# for (i in 1:nrow(info.Aug)) {
-#   info.Aug$c1Count[i] =info.Aug2[info.Aug$cidx[i],]$Count
-# }
-# 
-# 
-# for (i in 1:nrow(info.Aug)) {
-#   info.Aug$c2Count[i] =info.Aug2[info.Aug$cidx2[i],]$Count
-# }
-# 
-# info.Aug <- info.Aug %>%
-#   mutate(C2 = c1Count + c2Count)
-# 
-# 
-# mapview(info.Aug)
-
-
-#### Adding more features ####
-
-# #link_type
-# info.Aug$link_type<- ifelse(grepl('street', info.Aug$Street, ignore.case=T), 'street',
-#                             ifelse(grepl('avenue', info.Aug$Street, ignore.case=T), 'avenue',
-#                                    ifelse(grepl('boulevard', info.Aug$Street, ignore.case=T), 'boulevard',
-#                                           ifelse(grepl(' st ', info.Aug$Street, ignore.case = T), 'street', 
-#                                                  ifelse(grepl(' ave ', info.Aug$Street, ignore.case = T), 'avenue', 'other')))))
-
-# unique(info.Aug$link_type)
-# 
-# info.Aug$isAve<- 0
-# info.Aug$isAve[info.Aug$link_type=='avenue']<-1
-# 
-# aves<-subset(info.Aug, link_type=='avenue')
-# 
-# ggplot()+
-#   geom_sf(data=aves)
 
 #borough
 boxplot(Count ~ LBoro,
@@ -385,87 +262,22 @@ boxplot(Count ~ LBoro,
 
 info.Aug$isMH<-0
 info.Aug$isMH[info.Aug$LBoro==1]<-1
-# 
-# info.Aug$Boro_F<-as.factor(info.Aug$LBoro)
 
 #travel lanes
 info.Aug$Number_Tra <- as.numeric(info.Aug$Number_Tra)
-# info.Aug$Number_Tot <- as.numeric(info.Aug$Number_Tot)
-# info.Aug$Number_Par <- as.numeric(info.Aug$Number_Par)
-# 
-# glimpse(info.Aug)
-
-# info.Aug$FewLanes<- 0
-# info.Aug$FewLanes[info.Aug$Number_Tra>3]<-1
 
 
 #snow route
-critical<-subset(info.Aug, Snow_Prior=='C')
-mapview(critical)
-
-sector<-subset(info.Aug, Snow_Prior=='S')
-mapview(sector)
-
-haulster<-subset(info.Aug, Snow_Prior=='H')
-mapview(haulster)
-
-snow_v<-subset(info.Aug, Snow_Prior=='V')
-mapview(snow_v)
-
 info.Aug$MinorSnowRoute<-0
 info.Aug$MinorSnowRoute[info.Aug$Snow_Prior=='S']<-1
 
 #speed limit
 info.Aug$POSTED_SPE<-as.numeric(info.Aug$POSTED_SPE)
-ggplot(info.Aug, aes(x=POSTED_SPE, y=Count))+
-  geom_point(size=0.5, alpha=0.2)+
-  geom_smooth(method='lm')
-
-boxplot(Count~POSTED_SPE,
-        data=info.Aug)
-
-# info.Aug$Speed_20s<-0
-# info.Aug$Speed_20s[info.Aug$POSTED_SPE<30]<-1
-# info.Aug$Speed_20s[info.Aug$POSTED_SPE==15]<-0
-
-#truck route
-info.Aug$Truck_Num<-0
-info.Aug$Truck_Num[info.Aug$TRUCK_ROUT==2]<-2
-info.Aug$Truck_Num[info.Aug$TRUCK_ROUT==3]<-3
-# info.Aug$Truck_Thru<-0
-# info.Aug$Truck_Thru[info.Aug$TRUCK_ROUT==3]<-1
 
 #citibike stations
 #drop all columns but geometry
 station<-station%>%
   select()
-
-#distance to of nearest 5 stations
-# info.Aug <-
-#   info.Aug %>% 
-#   mutate(
-#     citibike_nn1 = nn_function(st_coordinates(st_centroid(info.Aug)), st_coordinates(station), 1),
-#     citibike_nn2 = nn_function(st_coordinates(st_centroid(info.Aug)), st_coordinates(station), 2), 
-#     citibike_nn3 = nn_function(st_coordinates(st_centroid(info.Aug)), st_coordinates(station), 3), 
-#     citibike_nn4 = nn_function(st_coordinates(st_centroid(info.Aug)), st_coordinates(station), 4), 
-#     citibike_nn5 = nn_function(st_coordinates(st_centroid(info.Aug)), st_coordinates(station), 5)) 
-
-#count of stations within a buffer
-# st_crs(info.Aug)
-# st_crs(station)
-# 
-# info.Aug$citibike.Buffer =
-#   st_buffer(info.Aug, 500) %>% 
-#   aggregate(mutate(station, counter = 1),., sum) %>%
-#   pull(counter)
-# 
-# info.Aug$citibike.Buffer[is.na(info.Aug$citibike.Buffer)] <- 0
-# 
-# info.Aug$citibike.Buffer_large =
-#   st_buffer(info.Aug, 1000) %>% 
-#   aggregate(mutate(station, counter = 1),., sum) %>%
-#   pull(counter)
-# info.Aug$citibike.Buffer_large[is.na(info.Aug$citibike.Buffer_large)] <- 0
 
 info.Aug$citibike.Buffer_small =
   st_buffer(info.Aug, 250) %>% 
@@ -486,31 +298,23 @@ info.Aug <- info.Aug %>%
   mutate(dist.edge = nn_function((st_coordinates(st_centroid(info.Aug))),
                                  st_coordinates(extent.point), 1))
 
-#trail
-info.Aug$isTrail<-0
-info.Aug$isTrail[info.Aug$RW_TYPE=='6']<-1
-
 #fixNAs
-info.Aug$Number_Tra[is.na(info.Aug$Number_Tra)] <- 0
-info.Aug$StreetWidt[is.na(info.Aug$StreetWidt)] <- 0
-info.Aug$POSTED_SPE[is.na(info.Aug$POSTED_SPE)] <- 0
+
+#find averages
+median_lanes <- median(info.Aug$Number_Tra, na.rm=TRUE)
+median_width<- median(info.Aug$StreetWidt, na.rm = TRUE)
+median_speed<- median(info.Aug$POSTED_SPE, na.rm=TRUE)
+
+
+info.Aug$Number_Tra[is.na(info.Aug$Number_Tra)] <- median_lanes
+info.Aug$StreetWidt[is.na(info.Aug$StreetWidt)] <- median_width
+info.Aug$POSTED_SPE[is.na(info.Aug$POSTED_SPE)] <- median_speed
 info.Aug$TRUCK_ROUT[is.na(info.Aug$TRUCK_ROUT)] <- 0
-info.Aug$XFrom[is.na(info.Aug$XFrom)] <- 0
-info.Aug$nhCount[is.na(info.Aug$nhCount)] <- 0
-info.Aug$Count[is.na(info.Aug$Count)] <- 0
+#info.Aug$nhCount[is.na(info.Aug$nhCount)] <- 0
 
 
-
-
-#write the data (not working)
-# st_write(info.Aug, 'info.Aug.shp')
-
-#Number_Tra, POSTED_SPE, StreetWidt, dist.lane,citibike.Buffer_small,citibike_nn1, citibike_nn2, citibike_nn3, citibike_nn4,nhCount, XFrom, YFrom,Count
-
-aug.toView<-info.Aug%>%
-  select(Street, SegmentID, Count, bikeLaneLv, Number_Tra, POSTED_SPE, StreetWidt, dist.lane,citibike.Buffer_small,citibike_nn1, citibike_nn2,nhCount, MinorSnowRoute, trailOrNot, TRUCK_ROUT, XFrom, YFrom)
-
-#### more vars from eugene ####
+#### census variables ####
+#variables available at: https://api.census.gov/data/2019/acs/acs5/variables.html
 v19 <- load_variables(2019, "acs5", cache = TRUE)
 
 census_df <- data.frame(vars = c("B01003_001E",
@@ -518,14 +322,22 @@ census_df <- data.frame(vars = c("B01003_001E",
                                  'B01001A_002E',
                                  'B01001A_017E',
                                  'B01002_001E',
-                                 'B19001_001E',
+                                 'B19013_001E',
                                  'B25031_001E',
                                  'B25044_001E',
                                  'B08006_003E',
                                  'B08006_010E',
                                  'B08131_001E',
                                  'B08141_002E',
-                                 'B08141_001E'),
+                                 'B08141_001E',
+                                 'B08303_001E',
+                                 'B03001_003E',
+                                 'B26001_001E',
+                                 'B25007_012E',
+                                 'B08201_001E',
+                                 'B25002_001E',
+                                 'B25002_003E',
+                                 'B08006_014E'),
                         colNames2 = c('TotPop',
                                       'WhitePop',
                                       'TotMale',
@@ -538,7 +350,15 @@ census_df <- data.frame(vars = c("B01003_001E",
                                       'Commute_Subway',
                                       'Travel_Time',
                                       'No_Vehicle',
-                                      'Means_of_Transport_pop'),
+                                      'Means_of_Transport_pop',
+                                      'Travel_Time_pop',
+                                      'LatinoPop',
+                                      'GroupQuarters',
+                                      'NumRenters',
+                                      'AvgHHSize',
+                                      'TotUnits',
+                                      'VacUnits',
+                                      'Commute_Bike'),
                         stringsAsFactors = FALSE)
 
 census_vars <- census_df$vars
@@ -573,48 +393,131 @@ Census_raw <- get_acs(geography = "tract",
                 census_colNames) %>% 
   st_transform(2263)
 
-extent<-st_transform(extent, crs=2263)
-Census_geoinfo <- Census_raw %>%
-  dplyr::select(GEOID, geometry) %>%
-  st_join(extent) %>% na.omit() %>% dplyr::select(GEOID,geometry)
+#extent<-st_transform(extent, crs=2263)
 
-# extract centroid of each census tract
-Census_geoinfo <- Census_geoinfo %>% 
-  mutate(centroid_X = st_coordinates(st_centroid(Census_geoinfo))[, 1],
-         centroid_Y = st_coordinates(st_centroid(Census_geoinfo))[, 2])
+#no?
+#Census_geoinfo <- Census_raw %>%
+#  dplyr::select(GEOID, geometry) %>%
+#  st_join(extent) %>% na.omit() %>% dplyr::select(GEOID,geometry)
+
+# NO? extract centroid of each census tract
+#Census_geoinfo <- Census_geoinfo %>% 
+#  mutate(centroid_X = st_coordinates(st_centroid(Census_geoinfo))[, 1],
+#         centroid_Y = st_coordinates(st_centroid(Census_geoinfo))[, 2])
 
 Census_raw <- Census_raw%>%
   st_transform(2263)%>%
   mutate(AREA=st_area(geometry))
+Census_raw <- Census_raw%>%
+  st_transform(2263)%>%
+  mutate(sq_mi=AREA/27878400)
 
+#deal with NAs here
+colSums(is.na(Census_raw))
+
+median_age<-median(Census_raw$MedianAge, na.rm = TRUE)
+median_rent<-median(Census_raw$MedRent, na.rm=TRUE)
+
+Census_raw$MedianAge[is.na(Census_raw$MedianAge)] <- median_age
+Census_raw$MedRent[is.na(Census_raw$MedRent)] <- median_rent
+
+
+# calculate some vars
 Census <- Census_raw %>% 
   st_transform(2263) %>% 
   mutate(pWhite = WhitePop / TotPop,
-         PopDens = TotPop/AREA,
-         Mean_Commute_Time = Travel_Time / Means_of_Transport_pop,
+         PopDens = TotPop/sq_mi,
+         Mean_Commute_Time = Travel_Time / Travel_Time_pop,
          pSubway = Commute_Subway / Means_of_Transport_pop,
          pDrive = Commute_DriveAlone/Means_of_Transport_pop,
-         pFemale = TotFemale/TotPop,
-         pNoVeh = No_Vehicle / TotPop)
+         pBike = Commute_Bike/Means_of_Transport_pop,
+         pNoVeh = No_Vehicle / TotPop,
+         pLatino = LatinoPop / TotPop,
+         pQuarters = GroupQuarters / TotPop,
+         pRenters = NumRenters / TotPop,
+         pVacant = VacUnits / TotUnits)
+
+#fix weird values in calculated vars
+
+#set infinity values to NA
+Census_geo<-Census%>%
+  select(GEOID)
+
+Census_st<- st_set_geometry(Census, NULL)
+Census_fix <- do.call(data.frame, lapply(Census_st, function(x) replace(x, is.infinite(x), NA)))
+
+#fix NAs in calculated vars
+colSums(is.na(Census_fix))
+
+median_pWhite<-median(Census_fix$pWhite, na.rm=TRUE)
+median_pLatino<-median(Census_fix$pLatino, na.rm=TRUE)
+median_commute<-median(Census_fix$Mean_Commute_Time, na.rm = TRUE)
+median_subway<-median(Census_fix$pSubway, na.rm=TRUE)
+median_noveh<-median(Census_fix$pNoVeh, na.rm=TRUE)
+median_drive<-median(Census_fix$pDrive, na.rm=TRUE)
+median_quarters<-median(Census_fix$pQuarters, na.rm=TRUE)
+median_renters<-median(Census_fix$pRenters, na.rm=TRUE)
+median_vacant<-median(Census_fix$pVacant, na.rm=TRUE)
+median_bike<-median(Census_fix$pBike, na.rm=TRUE)
 
 
+Census_fix$pWhite[is.na(Census_fix$pWhite)] <- median_pWhite
+Census_fix$pLatino[is.na(Census_fix$pLatino)] <- median_pLatino
+Census_fix$Mean_Commute_Time[is.na(Census_fix$Mean_Commute_Time)] <- median_commute
+Census_fix$pSubway[is.na(Census_fix$pSubway)] <- median_subway
+Census_fix$pNoVeh[is.na(Census_fix$pNoVeh)] <- median_noveh
+Census_fix$pDrive[is.na(Census_fix$pDrive)] <- median_drive
+Census_fix$pQuarters[is.na(Census_fix$pQuarters)] <- median_quarters
+Census_fix$pRenters[is.na(Census_fix$pRenters)] <- median_renters
+Census_fix$pVacant[is.na(Census_fix$pVacant)] <- median_vacant
+
+
+#if % greater than 1, set value equal to median
+Census_fix$pSubway[Census_fix$pSubway>1.1] <- median_subway
+
+#weird_subway<-subset(Census_fix, pSubway>1)
+
+#get geometry back
+Census<- inner_join(Census_geo, Census_fix)
+
+#select the variables of interest
 Census <- Census %>%
-  dplyr::select(GEOID, TotPop, PopDens, MedianAge, MedHHInc,
-                pWhite, MedRent, Mean_Commute_Time, pSubway, pDrive, pNoVeh)
+  select(GEOID, TotPop, PopDens, MedianAge, MedHHInc, AvgHHSize,
+                pWhite, pLatino, MedRent, Mean_Commute_Time, pSubway, pDrive, pBike, pNoVeh,
+                pQuarters, pRenters, pVacant)
 
-tract_list <- Census_geoinfo$GEOID
 
-Census_ct <- Census %>%
-  filter(Census$GEOID %in% tract_list) %>%
-  st_set_geometry(NULL)
 
-Census_ct
+#tract_list <- Census_geoinfo$GEOID
+
+#Census_ct <- Census %>%
+#  filter(Census$GEOID %in% tract_list) %>%
+#  st_set_geometry(NULL)
+
+#Census_ct
 
 #join with info.Aug
-st_crs(Census)
-Census_raw<-st_transform(Census_raw, st_crs(info.Aug))
-Census<-st_transform(Census, st_crs(info.Aug))
-info.Aug_census4<-st_join(st_centroid(info.Aug), left=TRUE, Census)
+Census<-st_transform(Census, crs=st_crs(info.Aug))
+info.Aug_census<-st_join(st_centroid(info.Aug), left=TRUE, Census)
+
+
+#fill NAs for the 16 records that didn't join to a census tract
+info.Aug_census$PopDens[is.na(info.Aug_census$PopDens)] <- 0
+info.Aug_census$MedianAge[is.na(info.Aug_census$MedianAge)] <- 0
+info.Aug_census$MedHHInc[is.na(info.Aug_census$MedHHInc)] <- 0
+info.Aug_census$AvgHHSize[is.na(info.Aug_census$AvgHHSize)] <- 0
+info.Aug_census$pWhite[is.na(info.Aug_census$pWhite)] <- 0
+info.Aug_census$pLatino[is.na(info.Aug_census$pLatino)] <- 0
+info.Aug_census$MedRent[is.na(info.Aug_census$MedRent)] <- 0
+info.Aug_census$Mean_Commute_Time[is.na(info.Aug_census$Mean_Commute_Time)] <- 0
+info.Aug_census$pSubway[is.na(info.Aug_census$pSubway)] <- 0
+info.Aug_census$pDrive[is.na(info.Aug_census$pDrive)] <- 0
+info.Aug_census$pBike[is.na(info.Aug_census$pBike)] <- 0
+info.Aug_census$pNoVeh[is.na(info.Aug_census$pNoVeh)] <- 0
+info.Aug_census$pQuarters[is.na(info.Aug_census$pQuarters)] <- 0
+info.Aug_census$pRenters[is.na(info.Aug_census$pRenters)] <- 0
+info.Aug_census$pVacant[is.na(info.Aug_census$pVacant)] <- 0
+
 
 
 
@@ -623,7 +526,7 @@ info.Aug_census4<-st_join(st_centroid(info.Aug), left=TRUE, Census)
 # create a correlation matrix of all numerical variables
 info.Aug
 numericVars <- 
-  select_if(st_drop_geometry(info.Aug[, -c(1:2, 30)]), is.numeric) %>% 
+  select_if(st_drop_geometry(info.Aug_census[, -c(1:2, 30)]), is.numeric) %>% 
   na.omit()
 
 
@@ -687,13 +590,10 @@ ggplot()+
   geom_smooth(data= info.Aug, aes(x=XFrom, y=Count), method='lm')
 
 
-#matrix of cor plots
-glimpse(info.Aug)
+#matrix of cor plots: LION at citibike vars
 correlation.long <-
   select(st_drop_geometry(info.Aug), c(Number_Tra, POSTED_SPE, StreetWidt, dist.lane,
                                        citibike.Buffer_small,
-                                       citibike_nn1, citibike_nn2, citibike_nn3, citibike_nn4,
-                                       nhCount, XFrom, YFrom,
                                        Count)) %>%
   gather(Variable, Value, -Count)
 
@@ -709,13 +609,19 @@ ggplot(correlation.long, aes(Value, Count)) +
             x=-Inf, y=Inf, vjust = 1.5, hjust = -.1) +
   geom_smooth(method = "lm", se = FALSE, colour = "blue") +
   facet_wrap(~Variable, ncol = 2, scales = "free") +
-  labs(title = "Count of trips as a function of some features")
+  labs(title = "Count of trips as a function of LION and citibike features")
 
-#matrix of cor plots for census variables
+#matrix of cor plots: census variables
+colSums(is.na(info.Aug_census))
+
+#TotPop, PopDens, MedianAge, MedHHInc, AvgHHSize,
+#pWhite, pLatino, MedRent, Mean_Commute_Time, pSubway, pDrive, pNoVeh,
+#pQuarters, pRenters, pVacant
+
 correlation.long_c <-
-  select(st_drop_geometry(info.Aug_census4), c(TotPop, PopDens, MedianAge, MedHHInc,
-                                               pWhite, MedRent, Mean_Commute_Time, pSubway, pDrive, pNoVeh,
-                                               Count)) %>%
+  select(st_drop_geometry(info.Aug_census), c(MedHHInc, AvgHHSize,
+                                              pWhite, pLatino, MedRent, Mean_Commute_Time, pSubway, pDrive, pNoVeh, pBike,
+                                              Count)) %>%
   gather(Variable, Value, -Count)
 
 correlation.cor_c <-
@@ -727,69 +633,80 @@ correlation.cor_c <-
 ggplot(correlation.long_c, aes(Value, Count)) +
   geom_point(size = 0.1) +
   geom_text(data = correlation.cor_c, aes(label = paste("r =", round(correlation, 2))),
-            x=-Inf, y=Inf, vjust = 1.5, hjust = -.1) +
+            x=-Inf, y=Inf, vjust = 1.5, hjust = -.1, color='blue') +
   geom_smooth(method = "lm", se = FALSE, colour = "blue") +
   facet_wrap(~Variable, ncol = 2, scales = "free") +
-  labs(title = "Count of trips as a function of some census features")
+  labs(title = "Count of trips as a function of census features")
 
+#check for multicolinearity among census variables
+glimpse(info.Aug_census)
+mc_check<-info.Aug_census[,35:44]
+mc_check<-st_set_geometry(mc_check, NULL)
+glimpse(mc_check)
+cor2pcor(cov(mc_check))
 
-#map of some variables
-ggplot()+
-  geom_sf(data=info.Aug, aes(color=dist.lane))
-
-ggplot()+
-  geom_sf(data=info.Aug, aes(color=C2))
-
-ggplot()+
-  geom_sf(data=info.Aug, aes(color=nhCount))
+info.Aug<-info.Aug_census
 
 ####====Regression====####
 glimpse(info.Aug)
 
 info.Aug$Centroid <- st_centroid(info.Aug$geometry)
-
 st_coordinates(info.Aug$Centroid)
 
+#split data into train and test
+## training set = 75% of the sample
+smp_size <- floor(0.75 * nrow(info.Aug))
+
+## set the seed to make your partition reproducible
+set.seed(123)
+train_ind <- sample(seq_len(nrow(info.Aug)), size = smp_size)
+
+train <- info.Aug[train_ind, ]
+test <- info.Aug[-train_ind, ]
+
+
 #Make the regression
-reg_basic<-lm(Count ~ bikeLaneLv + Number_Tra + StreetWidt + MinorSnowRoute + TRUCK_ROUT + citibike.Buffer_small + isMH, data=info.Aug)
+reg_basic<-lm(Count ~ bikeLaneLv + dist.lane + Number_Tra + StreetWidt + 
+                + TRUCK_ROUT + citibike.Buffer_small + isMH +
+                pWhite + MedRent + pNoVeh + pBike + pSubway + pDrive, data=train)
 summary(reg_basic)
 
-reg_compare<-lm(Count ~ bikeLaneLv  + Number_Tra + StreetWidt + POSTED_SPE + 
-                  TRUCK_ROUT + MinorSnowRoute + citibike.Buffer_small + isMH +
-                  pWhite + pNoVeh + MedRent, data=info.Aug_census4)
+#eliminated POSTED_SPE
+reg_compare<-lm(Count ~ bikeLaneLv + dist.lane + Number_Tra + StreetWidt + 
+                  + TRUCK_ROUT + citibike.Buffer_small + isMH +
+                  pWhite + MedRent + pNoVeh + pBike + pSubway + pDrive, data=train)
 summary(reg_compare)
 
-reg_rf<-ranger(Count ~ bikeLaneLv  + Number_Tra + StreetWidt + POSTED_SPE + MinorSnowRoute + TRUCK_ROUT + citibike.Buffer_small + isMH + XFrom + YFrom + nhCount, data=info.Aug)
-summary(reg_rf)
 
-reg <- lm(Count ~ bikeLaneLv + dist.lane + Number_Tra + StreetWidt + MinorSnowRoute + POSTED_SPE + TRUCK_ROUT + YFrom*isMH + XFrom*isMH + nhCount + citibike.Buffer_small, data=info.Aug, method='ranger')
-summary(reg)
+#make predictions
+predictions<-reg_basic %>% predict(test)
+predictions_comp<-reg_compare %>% predict(test)
 
-reg_p <- lm(Count ~ bikeLaneLv + dist.lane + Number_Tra + StreetWidt + MinorSnowRoute + POSTED_SPE  + TRUCK_ROUT
-            + YFrom*isMH + XFrom*isMH + nhCount + citibike.Buffer_small , data=info.Aug)
-summary(reg_p)
-
-reg_p2<-lm(Count ~ bikeLaneLv + isMH + dist.lane + Number_Tra + StreetWidt + SnowLv + POSTED_SPE + TRUCK_ROUT
-           + YFrom*isMH + XFrom*isMH + nhCount + citibike.Buffer_small, data=info.Aug)
-summary(reg_p2)
-
-info.Aug_test <- info.Aug %>% mutate_all(~replace(.,is.na(.),0)) %>% st_drop_geometry()
-reg_rf <- ranger::ranger(Count ~ bikeLaneLv + isMH + dist.lane + Number_Tra + StreetWidt + MinorSnowRoute + POSTED_SPE + TRUCK_ROUT 
-                         + nhCount + citibike.Buffer_small, data=info.Aug_test)
-summary(reg_rf)
-
-info.Aug_test$pred <- predict(reg_rf,data = info.Aug_test)$predictions
-info.Aug_test <- info.Aug_test %>% mutate(
-  Error = pred - Count,
-  AbsError = abs(pred - Count),
-  APE = ((abs(pred - Count))/pred)
+#model performance
+perf_basic<-data.frame(
+  RMSE=RMSE(predictions, test$Count),
+  R2 = R2(predictions, test$Count)
 )
 
-ggplot()+geom_histogram(data = info.Aug_test,aes(AbsError),binwidth = 10)
+perf_compare <-data.frame(
+  RMSE=RMSE(predictions_comp, test$Count),
+  R2 = R2(predictions_comp, test$Count)
+)
 
-stargazer(reg, type = "html",
-          title = "Regression results",
-          single.row = TRUE)
+#test$pred_1 <- reg_basic%>%predict(test)
+#test$pred_2<- reg_compare%>%predict(test)
+
+#test_perform1 <- test %>% mutate(
+#  Error1 = pred_1 - Count,
+#  AbsError1 = abs(pred_1 - Count),
+#  APE1 = ((abs(pred_1 - Count))/pred_1)
+#)
+
+#ggplot()+geom_histogram(data = info.Aug_test,aes(AbsError),binwidth = 10)
+
+#stargazer(reg, type = "html",
+#          title = "Regression results",
+#          single.row = TRUE)
 
 
 #plotting residuals some more
@@ -820,18 +737,6 @@ hist(info.Aug$res_reg1, col='skyblue3', breaks = 50, main='Histogram of Residual
 
 
 #### more detailed modeling - train/test and errors ####
-#retrain model into training and test sets
-# create the training set
-## 75% of the sample size
-smp_size <- floor(0.75 * nrow(info.Aug))
-
-## set the seed to make your partition reproducible
-set.seed(123)
-train_ind <- sample(seq_len(nrow(info.Aug)), size = smp_size)
-
-train <- info.Aug[train_ind, ]
-test <- info.Aug[-train_ind, ]
-
 # Regression  
 reg_all <- lm(Count ~ bikeline + dist.lane + C2, data = st_drop_geometry(train))
 
