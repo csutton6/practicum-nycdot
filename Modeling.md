@@ -84,12 +84,14 @@ Using Sep18 and Sep19 as comparison:
 <br>
 #### Lower Manhattan
 
+<br>
+
 
 |         | Pre   |  Post   |   Difference  |
 |---------|------:|--------:|--------------:|
 |Treatment|  3786  |    8397   |            4611|
 |Control  |  1713  |    2903  |            1190|
-|Difference|	-2073	 |      -5494 |            -3421|
+|Difference|	2073	 |      5494 |            3421|
 
 
 
