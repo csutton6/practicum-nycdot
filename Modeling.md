@@ -81,6 +81,18 @@ Using Sep18 and Sep19 as comparison:
 <br>
 <img src="https://github.com/kateesutt/practicum-nycdot/blob/main/images/eh_Diff1819.jpeg">
 
+<br>
+#### Lower Manhattan
+
+<br>
+
+
+|         | Pre   |  Post   |   Difference  |
+|---------|------:|--------:|--------------:|
+|Treatment|  3786  |    8397   |            4611|
+|Control  |  1713  |    2903  |            1190|
+|Difference|	2073	 |      5494 |            3421|
+
 
 
 ### Coefficients between the number of trips and whether there is a bikelanes

@@ -71,6 +71,34 @@ body {
 }
 
 
+.legend {
+    position: absolute;
+    background-color: rgb(255, 255, 255, 0.7);
+    border-style: solid;
+    border-color: rgb(128, 128, 128, 0.85);
+    z-index: 2000;
+    right: 0.5%;
+    bottom: 5%;
+    width: 180px;
+  }
+
+.legend-box {
+    position:absolute;
+    width: 25px;
+    height: 15px; 
+    left: 5%;
+}
+  
+.legend-text{
+    text-indent:5px;
+}
+
+
+
+
+  
+
+
 
 
 
