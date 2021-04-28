@@ -992,6 +992,7 @@ ggplot()+
 
 glimpse(info.Aug)
 
+#### modeling outtakes ####
 
 #buffer version (not working)
 #info.Aug_env$sidewalk_caf.Buffer =
@@ -999,5 +1000,46 @@ glimpse(info.Aug)
 #   aggregate(mutate(sidewalk_cafe, counter = 1),., sum) %>%
 #   pull(counter)
 #info.Aug_env$sidewalk_caf.Buffer[is.na(info.Aug_env$sidewalk_cafe.Buffer)] <- 0
+
+#Restaurants
+restaurants<-read.csv("https://data.cityofnewyork.us/resource/43nn-pn8j.csv?$where=boro!='Staten Island'&$limit=390000")
+
+restaurants<- restaurants%>%
+  drop_na(latitude)
+
+restaurants_work <- st_as_sf(restaurants, coords=c('longitude', 'latitude'), crs=4326)
+st_crs(extent)
+st_crs(restaurants_work)
+
+restaurants_work
+
+##nn version
+restaurants_work<-st_transform(restaurants_work, crs=st_crs(info.Aug_env))
+
+extent<-st_transform(extent, st_crs(info.Aug_env))
+restaurants_extent<-restaurants_work[extent,]
+
+st_crs(restaurants_work)
+
+info.Aug_env<- info.Aug_env %>%
+  mutate(
+    restaurant_nn1 = nn_function(st_coordinates(st_centroid(info.Aug_env)), st_coordinates(restaurants_work), 1),
+    restaurant_nn2 = nn_function(st_coordinates(st_centroid(info.Aug_env)), st_coordinates(restaurants_work), 2),
+    restaurant_nn3 = nn_function(st_coordinates(st_centroid(info.Aug_env)), st_coordinates(restaurants_work), 3))
+
+#buffer version
+info.Aug_env$restaurant.Buffer =
+  st_buffer(info.Aug_env, 500) %>% 
+  aggregate(mutate(restaurants_extent, counter = 1),., sum) %>%
+  pull(counter)
+info.Aug_env$restaurant.Buffer[is.na(info.Aug_env$restaurant.Buffer)] <- 0
+
+info.Aug_env$restaurant.BufferLarge =
+  st_buffer(info.Aug_env, 1000) %>% 
+  aggregate(mutate(restaurants_work, counter = 1),., sum) %>%
+  pull(counter)
+info.Aug_env$restaurant.BufferLarge[is.na(info.Aug_env$restaurant.BufferLarge)] <- 0
+
+View(info.Aug_env)
 
 

@@ -26,6 +26,8 @@ library(rjson)
 library(tidyr)
 library(sp)
 library(osmdata)
+library(leaflet)
+library(leafpop)
 
 #### palettes etc ####
 palette5 <- c("#25CB10", "#5AB60C", "#8FA108",   "#C48C04", "#FA7800")
@@ -767,13 +769,13 @@ test <- info.Aug[-train_ind, ]
 reg_basic<-lm(Count ~ bikeLaneLv + dist.lane + Number_Tra + StreetWidt + 
                 + TRUCK_ROUT + citibike.Buffer_small + isMH +
                 pWhite + MedRent + pNoVeh + pSubway + 
-                sidewalk_caf_nn3 + jobs_in_tract + bigPark + isGreenway + subway_nn5
-                , data=train)
+                sidewalk_caf_nn3  + bigPark + isGreenway + subway_nn5 +
+                jobs_in_tract + office_nn5, data=train)
 summary(reg_basic)
 
 reg_compare<-lm(Count ~ bikeLaneLv + dist.lane + Number_Tra + StreetWidt + 
                   + TRUCK_ROUT + citibike.Buffer_small + isMH +
-                  pWhite + MedRent + pNoVeh + pSubway + 
+                  as.factor(GEOID)+ 
                   sidewalk_caf_nn3  + bigPark + isGreenway + subway_nn5 +
                   jobs_in_tract + office_nn5, data=train)
 summary(reg_compare)
@@ -809,8 +811,8 @@ rmse.train <- caret::MAE(reg_predict_train, train$Count)
 # test MAE
 rmse.test  <- caret::MAE(reg_predict, test$Count)
 
-test <- cbind(test, reg_all_predict)
-train <- cbind(train, reg_all_predict_train)
+test <- cbind(test, reg_predict)
+train <- cbind(train, reg_predict_train)
 
 
 #add error types for each prediction
@@ -884,6 +886,9 @@ high_err_train<- subset(train, Count.AbsError>100)
 med_err_test<- subset(test, test$Count.AbsError>10)
 med_err_train<- subset(train, Count.AbsError>10)
 
+mod_err_test<- subset(test, test$Count.AbsError>30)
+mod_err_train<- subset(train, Count.AbsError>30)
+
 boroughs_clip<-st_intersection(borough, extent)
 
 ggplot()+
@@ -899,6 +904,34 @@ ggplot()+
   geom_sf(data=med_err_train, aes(color=Count.Error), size =0.7)+
   scale_color_continuous(type='viridis')+
   labs(title='Residuals Larger than 10')
+
+ggplot()+
+  geom_sf(data=boroughs_clip, fill='white', color='white')+
+  geom_sf(data=mod_err_test, aes(color=Count.Error), size=0.7)+
+  geom_sf(data=mod_err_train, aes(color=Count.Error), size =0.7)+
+  scale_color_continuous(type='viridis')+
+  labs(title='Residuals Larger than 30')
+
+#mapview test errors over 30
+mapview(list(mod_err_test, mod_err_train), zcol='Count.Error', popup = popupTable(mod_err_test,
+                                                             zcol = c('Street', "Count.Error")))
+
+#mapview train errors over 30
+mapview(mod_err_train, zcol='Count.Error', popup = popupTable(mod_err_train,
+                                                             zcol = c('Street', "Count.Error", 'isGreenway', 'bigPark')))
+
+#mapview test errors over 100
+mapview(high_err_test, zcol='Count.Error', popup = popupTable(high_err_test,
+                                                              zcol = c('Street', "Count.Error", 
+                                                                       'isGreenway', 'bigPark')))
+
+mapview(high_err_train, zcol='Count.Error', popup = popupTable(high_err_train,
+                                                              zcol = c('Street', "Count.Error", 
+                                                                       'isGreenway', 'bigPark')))
+
+high_count<-subset(info.Aug, Count>100)
+mapview(high_count, zcol='Count', popup = popupTable(high_count, zcol = c('Street', "Count")))
+
 
 #see it there is spatial autocorrelation in the errors
 #coords
