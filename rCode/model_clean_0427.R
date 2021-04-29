@@ -593,7 +593,154 @@ info.Aug$count_retail[is.na(info.Aug$count_retail)] <- 0
 info.Aug$count_office[is.na(info.Aug$count_office)] <- 0
 info.Aug$density_retail[is.na(info.Aug$density_retail)] <- 0
 info.Aug$density_office[is.na(info.Aug$density_office)] <- 0
+                                         
+                                         
+## Spatial lag
+                                         
+#function to get cloest idx
+nn_idx<- nn_function <- function(measureFrom,measureTo,k) {
+  measureFrom_Matrix <- as.matrix(measureFrom)
+  measureTo_Matrix <- as.matrix(measureTo)
+  nn <-   
+    get.knnx(measureTo, measureFrom, k)$nn.index[,k]
+  return(nn)  
+}
+ 
+#this index is the idex exactly for itselt-->so we start from 2
+#make a copy                                         
+info.Aug1 <- info.Aug
+                                         
+#C1
+info.Aug <- info.Aug %>%
+  mutate(cidx1 = nn_idx(st_coordinates(st_centroid(info.Aug$geometry)),
+                        st_coordinates(st_centroid(info.Aug1$geometry)), 2))
 
+
+#C2
+info.Aug <- info.Aug %>%
+  mutate(cidx2 = nn_idx(st_coordinates(st_centroid(info.Aug$geometry)),
+                        st_coordinates(st_centroid(info.Aug1$geometry)), 3))
+
+
+#C3
+info.Aug <- info.Aug %>%
+  mutate(cidx3 = nn_idx(st_coordinates(st_centroid(info.Aug$geometry)),
+                        st_coordinates(st_centroid(info.Aug1$geometry)), 4))
+
+#C4
+info.Aug <- info.Aug %>%
+  mutate(cidx4 = nn_idx(st_coordinates(st_centroid(info.Aug$geometry)),
+                        st_coordinates(st_centroid(info.Aug1$geometry)), 5))
+
+#C5
+info.Aug <- info.Aug %>%
+  mutate(cidx5 = nn_idx(st_coordinates(st_centroid(info.Aug$geometry)),
+                        st_coordinates(st_centroid(info.Aug1$geometry)), 6))
+
+
+#C6
+info.Aug <- info.Aug %>%
+  mutate(cidx6 = nn_idx(st_coordinates(st_centroid(info.Aug$geometry)),
+                        st_coordinates(st_centroid(info.Aug1$geometry)), 7))
+
+#C7
+info.Aug <- info.Aug %>%
+  mutate(cidx7 = nn_idx(st_coordinates(st_centroid(info.Aug$geometry)),
+                        st_coordinates(st_centroid(info.Aug1$geometry)), 8))
+
+#C8
+info.Aug <- info.Aug %>%
+  mutate(cidx8 = nn_idx(st_coordinates(st_centroid(info.Aug$geometry)),
+                        st_coordinates(st_centroid(info.Aug1$geometry)), 9))
+
+
+#C9
+info.Aug <- info.Aug %>%
+  mutate(cidx9 = nn_idx(st_coordinates(st_centroid(info.Aug$geometry)),
+                        st_coordinates(st_centroid(info.Aug1$geometry)), 10))
+
+#C10
+info.Aug <- info.Aug %>%
+  mutate(cidx10 = nn_idx(st_coordinates(st_centroid(info.Aug$geometry)),
+                        st_coordinates(st_centroid(info.Aug1$geometry)), 11))                                        
+                                         
+
+                                         
+#extract count based on index
+for (i in 1:nrow(info.Aug)) {
+  info.Aug$c1Count[i] =info.Aug1[info.Aug$cidx1[i],]$Count
+}
+
+for (i in 1:nrow(info.Aug)) {
+  info.Aug$c2Count[i] =info.Aug1[info.Aug$cidx2[i],]$Count
+}
+
+for (i in 1:nrow(info.Aug)) {
+  info.Aug$c3Count[i] =info.Aug1[info.Aug$cidx3[i],]$Count
+}
+
+for (i in 1:nrow(info.Aug)) {
+  info.Aug$c4Count[i] =info.Aug1[info.Aug$cidx4[i],]$Count
+}
+
+for (i in 1:nrow(info.Aug)) {
+  info.Aug$c4Count[i] =info.Aug1[info.Aug$cidx4[i],]$Count
+}
+
+for (i in 1:nrow(info.Aug)) {
+  info.Aug$c5Count[i] =info.Aug1[info.Aug$cidx5[i],]$Count
+}
+
+for (i in 1:nrow(info.Aug)) {
+  info.Aug$c6Count[i] =info.Aug1[info.Aug$cidx6[i],]$Count
+}
+
+for (i in 1:nrow(info.Aug)) {
+  info.Aug$c7Count[i] =info.Aug1[info.Aug$cidx7[i],]$Count
+}
+
+for (i in 1:nrow(info.Aug)) {
+  info.Aug$c8Count[i] =info.Aug1[info.Aug$cidx8[i],]$Count
+}
+
+for (i in 1:nrow(info.Aug)) {
+  info.Aug$c9Count[i] =info.Aug1[info.Aug$cidx9[i],]$Count
+}
+
+for (i in 1:nrow(info.Aug)) {
+  info.Aug$c10Count[i] =info.Aug1[info.Aug$cidx10[i],]$Count
+}                                         
+                                         
+ #get the avg 10
+
+for (i in 1:nrow(info.Aug)) {
+  max_val = max(c(info.Aug$c1Count[i], info.Aug$c2Count[i], info.Aug$c3Count[i], info.Aug$c4Count[i], info.Aug$c5Count[i], info.Aug$c6Count[i], info.Aug$c7Count[i], info.Aug$c8Count[i], info.Aug$c9Count[i], info.Aug$c10Count[i]))
+  min_val = min(c(info.Aug$c1Count[i], info.Aug$c2Count[i], info.Aug$c3Count[i], info.Aug$c4Count[i], info.Aug$c5Count[i], info.Aug$c6Count[i], info.Aug$c7Count[i], info.Aug$c8Count[i], info.Aug$c9Count[i], info.Aug$c10Count[i]))
+  sum = (info.Aug$c1Count[i] + info.Aug$c2Count[i] + info.Aug$c3Count[i] + info.Aug$c4Count[i] + info.Aug$c5Count[i] + info.Aug$c6Count[i] + info.Aug$c7Count[i] + info.Aug$c8Count[i] + info.Aug$c9Count[i] + info.Aug$c10Count[i])
+  left = sum - max_val - min_val
+  info.Aug$avgCount10[i] = left/ 8
+}
+
+
+#get the avg7 
+for (i in 1:nrow(info.Aug)) {
+  max_val = max(c(info.Aug$c1Count[i], info.Aug$c2Count[i], info.Aug$c3Count[i], info.Aug$c4Count[i], info.Aug$c5Count[i], info.Aug$c6Count[i], info.Aug$c7Count[i]))
+  min_val = min(c(info.Aug$c1Count[i], info.Aug$c2Count[i], info.Aug$c3Count[i], info.Aug$c4Count[i], info.Aug$c5Count[i], info.Aug$c6Count[i], info.Aug$c7Count[i]))
+  sum = (info.Aug$c1Count[i] + info.Aug$c2Count[i] + info.Aug$c3Count[i] + info.Aug$c4Count[i] + info.Aug$c5Count[i] + info.Aug$c6Count[i] + info.Aug$c7Count[i])
+  left = sum - max_val - min_val
+  info.Aug$avgCount7[i] = left/5
+}
+
+#get the avg 5
+
+for (i in 1:nrow(info.Aug)) {
+  max_val = max(c(info.Aug$c1Count[i], info.Aug$c2Count[i], info.Aug$c3Count[i], info.Aug$c4Count[i], info.Aug$c5Count[i]))
+  min_val = min(c(info.Aug$c1Count[i], info.Aug$c2Count[i], info.Aug$c3Count[i], info.Aug$c4Count[i], info.Aug$c5Count[i]))
+  sum = (info.Aug$c1Count[i] + info.Aug$c2Count[i] + info.Aug$c3Count[i] + info.Aug$c4Count[i] + info.Aug$c5Count[i])
+  left = sum - max_val - min_val
+  info.Aug$avgCount5[i] = left/3
+}                                        
+                                         
 #=============================================The Feature engineering part end
 
 #### Correlations ####
