@@ -1,29 +1,31 @@
 ---
 title: "Predicting Bikeshare Trips in New York City"
 author: "Jiaxuan Lyu, Xintian Stella Li & Kate Sutton"
-date: "5/4/2021"
+date: "May 2021"
 output: html_document
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
+<center>![bike](../images/loneGuyBiker.jpg){width=80%}</center>
 
 # 1 Introduction
-
 ## 1.1 About this Project
-This project developed a method of predicting bike ridership in New York City using bikeshare data with emphasis on the interaction between bicycle infrastructure and bike ridership. We used our modeling predictions to explore bike planning scenarios in New York City. This project is one of the first to rely on the route patterns of individual bikeshare trips, so the methods used herein could be applied to other similar datasets. This document will outline the motivation for our project, exploratory analysis, feature engineering and model building, and the scenario planning tool displayed in our application. 
+This project developed a method of **predicting bikeshare trips** in New York City with emphasis on the effect of **bicycle infrastructure**, such as bike lanes. We used our modeling predictions to explore bike planning scenarios in New York City. This project is one of the first to use data capturing the *unique routes taken by each bikeshare trip*, so the methods used herein could be applied to other similar datasets. This document will outline the motivation for our project, exploratory analysis, feature engineering and model building, and the scenario planning tool displayed in our application. 
 
-This project was completed for the final capstone in the Master of Urban Spatial Analytics program at the University of Pennsylvania. We are very thankful to our instructors, Ken Steif, Michael Fichman, and Matt Harris, for their insight and patient guidance as we undertook this large task. We are also incredibly grateful and indebted to our clients, Kyle Yakal-Kremski, Apaar Bansal, and Paula Rubira from the New York City Department of Transportation, for their generosity in sharing such a unique dataset with a group of students and working with us through this process.
+This project was completed for the final capstone in the **Master of Urban Spatial Analytics** program at the **University of Pennsylvania**. We are very thankful to our instructors, Ken Steif, Michael Fichman, and Matt Harris, for their insight and patient guidance as we undertook this large task. We are also incredibly grateful and indebted to our clients, Kyle Yakal-Kremski, Apaar Bansal, and Paula Rubira from the **New York City Department of Transportation**, for their generosity in sharing such a unique dataset with a group of students and working with us through this process.
 
-## 1.2 Motivation
-![bike](..images/dodgingBike.jpg)
-Riding a bike in a city can be a harrowing task of dodging turning vehicles, weaving around parked cars and delivery trucks, and watching out for a car door that may open any moment. Bike lanes are an important way to carve out space for cyclists to improve the comfort and safety of riding. However, it can be a very challenging task to build broad support for bike lanes and decide which routes should receive bike lanes first. Our project provides a new way of predicting the impact of a bike lane based on unique ridership data from the Citibike system in New York City.
+## 1.2 Motivation 
+<center>![bike](../images/dodgingBike.jpg){width=60%}</center>
+
+<br>
+Riding a bike in a city can be a harrowing task of dodging turning vehicles, weaving around parked cars and delivery trucks, and watching out for a car door that may open any moment. **Bike lanes** are an important way to carve out space for cyclists to improve the comfort and safety of riding. However, it can be a very challenging task to build broad support for bike lanes and **decide which streets should receive bike lanes** first. Our project provides a new way of predicting the impact of a bike lane based on unique ridership data from the *Citibike* system in New York City, in which people rent bikes from docked stations.
 
 ## 1.3 Use Case
-A transportation planner’s task of deciding where to install a new bike lane is a challenging one. Planners must create a network throughout the city that allows cyclists to flow between destinations and protects them from the dangers of the road. Planners may prioritize streets for bike lane investments based on the number of collisions between cars and cyclists or the value of a certain road to the network. There are also strategic factors, such as a street repaving, that can present a convenient time for lane reconfiguration. It is also crucial to develop relationships in communities where new bike lanes will be installed to build support for the changes and ensure community members know how to use the new cycling infrastructure.
+A transportation planner’s task of **deciding where to install a new bike lane** is a challenging one. Planners must create a network throughout the city that allows cyclists to flow between destinations and protects them from the dangers of the road. Planners may **prioritize streets for bike lane investments** based on the number of collisions between cars and cyclists or the value of a certain road to the network. There are also strategic factors, such as a street repaving, that can present a convenient time for lane reconfiguration. It is also crucial to develop relationships in communities where new bike lanes will be installed to build support for the changes and ensure community members know how to use the new cycling infrastructure.
 
-This project provides a unique way of prioritizing streets for bike lane investments based on observed bikeshare ridership. Predicting the impact of a new bikelane on a particular street would give our client, the NYC DOT, an additional tool to use in deciding which streets to prioritize for bike lanes. Furthermore, if planners can explain to a community board the most important streets for adding a bike lane or quantify the impact of adding a more protected facility, it could help advocate for the most needed changes or develop relationships with groups who are more skeptical of bike lanes.
+This project provides a unique way of prioritizing streets for bike lane investments *based on observed bikeshare ridership*. Predicting the impact of a new bikelane on bike ridership for would give our client, the NYC DOT, an additional tool to use in deciding which streets to prioritize for bike lanes. Furthermore, if planners can explain to a community board the most important streets for adding a bike lane or quantify the impact of adding a more protected facility, it could help advocate for the most needed changes or develop relationships with groups who are more skeptical of bike lanes.
 
 # 2 Data
 ## 2.1 Sources
