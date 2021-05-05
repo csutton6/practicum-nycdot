@@ -324,6 +324,6 @@ ridership$Count[is.na(ridership$Count)] <- 0
 save.image(file = "ridership.RData")
 
 
-mapview(info.Aug_405, zcol='Count')
+mapview(info.Aug_108, zcol='Count')
 #export as RData
 
