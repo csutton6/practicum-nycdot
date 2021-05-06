@@ -6,7 +6,33 @@ output: html_document
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = FALSE)
+
+load("C:/Users/katee/Box Sync/Practicum/shp/forMarkdown.RData")
+
+library(sf)
+library(tidyverse)
+library(mapview)
+
+mapTheme <- theme(plot.title =element_text(size=16),
+                  plot.subtitle = element_text(size=13),
+                  plot.caption = element_text(size = 10),
+                  axis.line=element_blank(),
+                  axis.text.x=element_blank(),
+                  axis.text.y=element_blank(),
+                  axis.ticks=element_blank(),
+                  axis.title.x=element_blank(),
+                  axis.title.y=element_blank(),
+                  panel.background=element_blank(),
+                  panel.border=element_blank(),
+                  panel.grid.major=element_line(colour = 'transparent'),
+                  panel.grid.minor=element_blank(),
+                  legend.direction = "vertical", 
+                  legend.position = "right",
+                  plot.margin = margin(1, 1, 1, 1, 'cm'),
+                  legend.key.height = unit(1, "cm"), legend.key.width = unit(0.2, "cm"))
+
+
 ```
 <center>![bike](../images/loneGuyBiker.jpg){width=80%}</center>
 
@@ -25,6 +51,11 @@ Riding a bike in a city can be a harrowing task of dodging turning vehicles, wea
 ## 1.3 Use Case
 A transportation planner’s task of **deciding where to install a new bike lane** is a challenging one. Planners must create a network throughout the city that allows cyclists to flow between destinations and protects them from the dangers of the road. Planners may **prioritize streets for bike lane investments** based on the number of collisions between cars and cyclists or the value of a certain road to the network. There are also strategic factors, such as a street repaving, that can present a convenient time for lane reconfiguration. It is also crucial to develop relationships in communities where new bike lanes will be installed to build support for the changes and ensure community members know how to use the new cycling infrastructure.
 
+<br>
+
+<center>![bike](../images/planningProcess.png){width=80%}</center>
+<br>
+
 This project provides a unique way of prioritizing streets for bike lane investments *based on observed bikeshare ridership*. Predicting the impact of a new bikelane on bike ridership for would give our client, the NYC DOT, an additional tool to use in deciding which streets to prioritize for bike lanes. Furthermore, if planners can explain to a community board the most important streets for adding a bike lane or quantify the impact of adding a more protected facility, it could help advocate for the most needed changes or develop relationships with groups who are more skeptical of bike lanes.
 
 # 2 Data
@@ -35,13 +66,30 @@ To predict bikeshare ridership, we relied on additional data sources including A
 ### Trip Data
 This project is unique because it relies on a very uncommon type of trip data that is not usually shared with the public. Most publicly available data on docked bikeshare systems is origin-destination data, meaning you know the stations where a trip starts and ends but not the route the cyclist took in between. Since 2018, Citibike has allowed riders to opt-in to having their trip tracked via their phone’s GPS. The resulting data, rather than being a pair of stations, is a line that shows the exact route a rider took. This allows much greater insight into the choices cyclists make when they ride and allows us to calculate the ridership of bikeshare trips on any given block.
 
+<br>
+<center>![bike](../images/tripData_diagram.png){width=80%}</center>
+<br>
+
 ### Types of Bike Lanes
 New York City uses three categories for recording bike lanes, which we have termed **Protected Lanes**, **Unprotected Lanes**, and **Sharrows**. The highest level of protection recorded in the data is a protected lane, which is separated from vehicle lanes by parked cars or another kind of buffer to create a dedicated space for cyclists. An unprotected lane is one in which the bike lane is painted onto the street immediately adjacent to the vehicle lane. Even though this is a bike lane, it offers less protection because vehicles can easily wander into the bike lane. The final category, sharrow, is used when streets are not wide enough for separate vehicle and bike lanes. The term sharrow refers to the symbol of an arrow with a cycle and is meant to encourage drivers to share the lane with cyclists. Since the sharrow is very similar to a street without a bike lane, we decided to exclude it from our category of bike lane.
+
+Protected Lane | Unprotected Lane | Sharrow
+---------------|------------------|--------
+![protected](../images/protected4.png){width=93%}|![unprotected](../images/melrose_striped2.PNG)|![sharrow](../images/sharrow2.PNG)
 
 ### Study Area
 Since the the Citibike network does not extend throughout all of New York, we defined a study area based on the time frame used by our predictive model: **August 2020**. We chose this month because it captures the warm weather of the summer and includes stations in the Bronx, which was only added to the Citibike network starting in July 2020. Our study area therefore comprises a **half mile buffer** around the **Citibike stations** that were available in August of 2020. This study area extends for most of Manhattan, and parts of the Bronx, Brooklyn, and Queens.
 
 
+
+```{r, echo=FALSE, fig.width=10, fig.height=7}
+ggplot()+
+  #geom_sf(data=extent, fill=NA)+
+  geom_sf(data=borough_sa, fill=NA)+
+  geom_sf(data=station, alpha=0.5, color='#005dab', fill='#005dab', show.legend = 'point')+
+  labs(title= 'Study Area', subtitle = 'Citibike Stations 1/2 mi Buffer', caption= 'August 2020 stations')+
+  mapTheme
+```
 
 ## 2.2 Data Cleaning
 Converting individual bikeshare trips into useful ridership data is a very challenging task. Since this is such a **novel** analysis, recording our data cleaning process will be helpful to anyone pursuing a similar project in the future. The steps we pursued are as follows:
@@ -52,7 +100,11 @@ Converting individual bikeshare trips into useful ridership data is a very chall
 4. Spatial join each point to one street segment buffer
 5. Group by street segment and Trip ID to sum the number of trips per segment
 
-### Possible Improvements 
+<br>
+<center>![bike](../images/dataCleaning_forMD2.png){width=80%}</center>
+<br>
+
+#### Possible Improvements 
 *Buffer Width* <br>
 For ease of calculation, we chose a single buffer width of **15 feet**. When buffers for different street segments overlap, assigning each point to only one of those buffers is more time-consuming in R. Using a buffer of 15 feet allowed us to capture most points and **minimize overlap** between buffers. However, many streets are more than 30 feet wide, so this method could miss some ridership. Using a variable buffer width based on street width could improve this calculation in the future. 
 
