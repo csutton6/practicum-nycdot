@@ -79,7 +79,7 @@ Using Sep18 and Sep19 as comparison:
 |Difference|	26 |      -75 |            -101|
 
 <br>
-<img src="https://github.com/kateesutt/practicum-nycdot/blob/main/images/eh_Diff1819.jpeg">
+<img src="https://github.com/kateesutt/practicum-nycdot/blob/main/images/diff_EH_changed.jpeg">
 
 <br>
 #### Lower Manhattan
