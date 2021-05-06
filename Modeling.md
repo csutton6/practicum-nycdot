@@ -60,6 +60,7 @@ Q:
 |Difference|	2920 |     4367 |             1447|
 
 
+<img src="https://github.com/kateesutt/practicum-nycdot/blob/main/images/Diff_CM_18.jpeg">
 
 <br>
 <br>
