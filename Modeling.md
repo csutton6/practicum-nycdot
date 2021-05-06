@@ -94,7 +94,7 @@ Using Sep18 and Sep19 as comparison:
 |Control  |  1713  |    2903  |            1190|
 |Difference|	2073	 |      5494 |            3421|
 
-<img src="https://github.com/kateesutt/practicum-nycdot/blob/main/images/LM_1819Diff.png" width="300" height="400">
+<img src="https://github.com/kateesutt/practicum-nycdot/blob/main/images/LM_1819Diff.png" width="400" height="400">
 
 ### Coefficients between the number of trips and whether there is a bikelanes
 
