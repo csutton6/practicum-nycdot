@@ -76,7 +76,7 @@ Using Sep18 and Sep19 as comparison:
 |---------|------:|--------:|--------------:|
 |Treatment|  178  |    332  |            154|
 |Control  |  152  |    407  |            255|
-|Difference|	-26 |      75 |            101|
+|Difference|	26 |      -75 |            -101|
 
 <br>
 <img src="https://github.com/kateesutt/practicum-nycdot/blob/main/images/eh_Diff1819.jpeg">
