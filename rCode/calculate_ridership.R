@@ -6,7 +6,6 @@ library(tidyverse)
 library(mapview)
 
 #read in data
-#points_old <- st_read("tripPoints_Aug20.shp")
 points_new<-st_read('Aug1_14_points.shp')
 
 extent <- st_read("station_extent_Aug2020.shp") %>%
@@ -16,21 +15,16 @@ cd<-st_read('https://data.cityofnewyork.us/resource/jp9i-3b7y.geojson') %>%
   st_transform(st_crs(points_new))
 
 cd_extent<-st_intersection(cd, extent)
-mapview(cd_extent)
 
 
 #clip points to study area extent
-st_crs(extent)
-st_crs(points_new)
-st_crs(points_old)
-#points_old<- st_transform(points_old, st_crs(points_new))
 points_new_extent<-st_intersection(points_new, extent)
-#points_old_extent<-st_intersection(points_old, extent)
 
 #bring in roads
 bike20d_buffer <- st_read("lion2020d_buffer15.shp") %>%
   st_transform(st_crs(points_new))
 
+# filter out non-bikeable LION segments (e.g. highways and ferry routes)
 bike20d_buffer<- subset(bike20d_buffer, RW_TYPE != 12 &
                 RW_TYPE != 7 &
                 RW_TYPE != 14 &
@@ -48,25 +42,16 @@ bike20d_buffer<- subset(bike20d_buffer, RW_TYPE != 12 &
                 SegmentTyp !='F'&
                 SegmentTyp !='T')
 
+#segment ID is not unique, so select distinct segment IDs
 bike20d_buffer <- distinct(bike20d_buffer,SegmentID,.keep_all = T)
-bike20d_buffer<- st_intersection(bike20d_buffer, extent)
 
-ggplot()+
-  geom_sf(data=bike20d_buffer)
+#clip street segments to study area
+bike20d_buffer<- st_intersection(bike20d_buffer, extent)
 
 save.image(file = "pointsClean_raw.RData")
 
 
-#try it on smaller data
-#newPoints_clean<- points_new_extent[,] %>% 
-#  mutate(pnt_id = seq.int(nrow(.))) %>% 
-#  st_join(.,points_new_extent,join = st_intersects, left = T,largest = TRUE)
-
-#function that chooses a cd
-#oldPoints_clean <- points_old[lion,] %>% 
-#  mutate(pnt_id = seq.int(nrow(.))) %>% 
-#  st_join(.,lion,join = st_intersects, left = T,largest = TRUE)
-  
+#function that cleans points for one community district
 cleaner<- function(cb){
   cd_chosen<- cd %>%
     filter(boro_cd==cb)
@@ -78,11 +63,7 @@ cleaner<- function(cb){
   return(points_clean)
 }
 
-streets_chosen<-st_intersection(bike20d_buffer, cd_chosen)
-cd_chosen <- cleaner('101')
-streets<-st_intersection(bike20d_buffer, cd_chosen)
-points_chosen<- cleaner('101')
-
+#run the function for each cd
 #Manhattan
 points_clean_101<- cleaner('101')
 points_clean_102<- cleaner('102')
@@ -128,12 +109,6 @@ points_clean_401<- cleaner('401')
 save.image(file = "pointsClean_MHBXBKQN.RData")
 
 
-st_write(points_clean_401, 'pointsClean_401.shp')
-
-mapview(cd_extent)
-
-test<-st_read('points_clean_102.shp')
-
 #function for counting trips
 countTrip <- function(pnt){
   tripCount <- pnt %>%
@@ -147,7 +122,6 @@ countTrip <- function(pnt){
 }
 
 #count trips in the previous dataframe
-#new_tripCount <- countTrip(newPoints_clean)
 count_101 <- countTrip(points_clean_101)
 count_102 <- countTrip(points_clean_102)
 count_103 <- countTrip(points_clean_103)
@@ -190,6 +164,7 @@ save.image(file = "pointsCounted.RData")
 
 
 #join the counted trips to the road data
+#Manhattan
 new_info.Aug <- lion %>% 
   merge(.,new_tripCount,by = "SegmentID",all.x = T) %>% 
   rename(Count=tripCount)
@@ -197,11 +172,6 @@ new_info.Aug <- lion %>%
 info.Aug_101<- bike20d_buffer %>% 
   merge(., count_101, by='SegmentID', all.y=T)%>%
   rename(Count=tripCount)
-
-
-ggplot()+
-  geom_sf(data=info.Aug_101, aes(color=Count))
-mapview(info.Aug_101, zcol='Count')
 
 info.Aug_102<- bike20d_buffer %>% 
   merge(., count_102, by='SegmentID', all.y=T)%>%
@@ -299,8 +269,6 @@ info.Aug_405<- bike20d_buffer %>%
   rename(Count=tripCount)
 
 #rbind everything back together
-#group by street and segment id and summarize everything we want to keep (count = sum(count))
-#join it back to the original bike20d_buffer or somehow bring back the segments with count0
 
 all_test<- rbind(info.Aug_101, info.Aug_102, info.Aug_103, info.Aug_104, info.Aug_105,
                  info.Aug_106, info.Aug_107, info.Aug_108, info.Aug_109, info.Aug_110,
@@ -310,20 +278,19 @@ all_test<- rbind(info.Aug_101, info.Aug_102, info.Aug_103, info.Aug_104, info.Au
                  info.Aug_316, info.Aug_355, info.Aug_401, info.Aug_402, info.Aug_405)
 
 glimpse(all_test)
+
+#group by street and segment id and sum ridership (some streets are split by community districts)
 all_grouped<-all_test%>%
   group_by(Street, SegmentID)%>%
   summarize(Count=sum(Count))
 all_grouped<-st_set_geometry(all_grouped, NULL)
 
+
+#join it back to the original bike20d_buffer or somehow bring back the segments with count0
 mergeCols <- c("Street", "SegmentID")
 ridership<- bike20d_buffer%>%
   merge(., all_grouped, by=mergeCols, all.x=T)
 ridership$Count[is.na(ridership$Count)] <- 0
 
-
-save.image(file = "ridership.RData")
-
-
-mapview(info.Aug_108, zcol='Count')
 #export as RData
-
+save.image(file = "ridership.RData")
