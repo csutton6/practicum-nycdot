@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>NYC DOT</title>
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <!-- CSS Imports -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-eOJMYsd53ii+scO/bJGFsiCZc+5NDVN2yr8+0RDqr0Ql0h+rP48ckxlpbzKgwra6" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.3.1/leaflet.css" integrity="sha256-iYUgmrapfDGvBrePJPrMWQZDcObdAcStKBpjP3Az+3s=" crossorigin="anonymous" />
+    <!-- Place framework CSS code here. -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css"
+          integrity="sha512-xodZBNTC5n17Xt2atTPuE1HxjVMSvLVW9ocqUKLsCC5CXdbqCmblAshOMAS6/keqq/sMZMZ19scR4PsZChSR7A=="
+          crossorigin=""/>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-eOJMYsd53ii+scO/bJGFsiCZc+5NDVN2yr8+0RDqr0Ql0h+rP48ckxlpbzKgwra6" crossorigin="anonymous">
+
+    <link rel="stylesheet" href="css/reset.css" />
+    <link rel="stylesheet" href="css/style.css" />
+    <!-- Favicon
+  –––––––––––––––––––––––––––––––––––––––––––––––––– -->
+     <link rel="icon" href="https://i.dlpng.com/static/png/6399834_preview.png">  
+     
+  </head>
+  <body>
+    <!-- Sidebar -->
+    <div class="sidebar-container">
+
+        <h2 class="title">Predicting ridership impacts of new bike infrastructure</h2>
+        <button type="button" class="btn btn-outline-info" data-bs-toggle="modal" data-bs-target="#Modal-info">Data Info</button>
+        <!-- Modal -->
+        <div class="modal fade" id="Modal-info" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+          <div class="modal-dialog">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title" id="Modal-info">Data Information</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+              </div>
+              <div class="modal-body">
+                <ul>
+                  <li>The ridership data and bike-station data used in this project are from <b>NYC DOT</b>.</li>
+                  <li>The road data used in this project are from LION.</li>
+                  <li>Half of the data in August, 2020 are aggregrated to be visualized in this website.</li>
+                  <li> Our study area comprises a half mile buffer around the Citibike stations that were available in August of 2020. 
+                    This study area extends for most of Manhattan, and parts of the Bronx, Brooklyn, and Queens. 
+                  </li>
+                  <li>The predictions under the Scenario part are based on random-forest model.</li>
+                  <br>
+                  For more information about the project, please check the GitHub link at the bottom.
+                </ul>
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <button type="button" class="btn btn-outline-info" data-bs-toggle="modal" data-bs-target="#Modal-instruction">Instructions</button>
+        <!-- Modal -->
+        <div class="modal fade" id="Modal-instruction" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+          <div class="modal-dialog">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title" id="Modal-instruction">Instructions</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+              </div>
+              <div class="modal-body">
+                <h5>Project Goals</h5>
+                This is the project for MUSA practium, in year 2021.
+                <br>
+                The goal of the project is to predict the impacts of new bikelanes on bike riderships.
+                <br>
+                Predicting the impact of a new bikelane on a particular street would give our client, the NYC DOT, and other users
+                an additional tool to use in deciding which streets to prioritize for bike lanes.
+                <br>
+                <br>
+                <h5>Page Instructions</h5>
+                  <ul>
+                    <li><b>Let's Visualize</b></li>
+                      <ul>
+                        <li>
+                          The choice of ridership is set as "checked" as default. 
+                          By clicking the button, we are able to visualize the bike riderships over our study area.
+                        </li>
+                        <li>
+                          Similarly, clicking buttons of bikelanes and bike stations enables us to see the bike lanes and bike stations over study area.
+                        </li>
+                        <li>
+                          Clicking on each road segment, we are able to see the actual bike trips and the predicted biketrips.
+                        </li>
+                      </ul>
+                    
+                    <li><b>Scenarios</b></li>
+                      <ul>
+                        <li>
+                          There are three different scenarios. 
+                          Moreover, under each scenarios, choosing "Protected Bikelanes" visualizes predicted changes of bike trips from changing
+                          the roads to proteced bikelanes; alternatively, clicking "Unproteced Bikelanes" visualizes predicted changes of bike
+                          trips from changing the roads to unprotected bikelanes.
+                        </li>
+                        <li>
+                          There is only one choice, "Protected Bikelanes", under the Upper Manhattan scenario because around half of
+                          bikelanes under this scenario are already unprotected bikelanes. Therefore, only predictions of
+                          <i>Protected Bikelanes</i> are provided.
+                        </li>
+                        <li>
+                          Clicking on each road segment, we are able to see the actual bike trips and the predicted biketrips.
+                        </li>
+                      </ul>
+                    
+                  </ul>
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <button type="button" class="btn btn-outline-warning" data-bs-toggle="modal" data-bs-target="#Modal-noitification">Notifications</button>
+        <!-- Modal -->
+        <div class="modal fade" id="Modal-noitification" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+          <div class="modal-dialog">
+            <div class="modal-content">
+              <div class="modal-header">
+                <div class="alert alert-danger d-flex align-items-center" role="alert">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-exclamation-triangle" viewBox="0 0 16 16">
+                    <path d="M7.938 2.016A.13.13 0 0 1 8.002 2a.13.13 0 0 1 .063.016.146.146 0 0 1 .054.057l6.857 11.667c.036.06.035.124.002.183a.163.163 0 0 1-.054.06.116.116 0 0 1-.066.017H1.146a.115.115 0 0 1-.066-.017.163.163 0 0 1-.054-.06.176.176 0 0 1 .002-.183L7.884 2.073a.147.147 0 0 1 .054-.057zm1.044-.45a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767L8.982 1.566z"/>
+                    <path d="M7.002 12a1 1 0 1 1 2 0 1 1 0 0 1-2 0zM7.1 5.995a.905.905 0 1 1 1.8 0l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995z"/>
+                  </svg>
+                  <div>
+                    Notifications
+                  </div>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+              </div>
+              <div class="modal-body" id="para-notification">
+                <ul>
+                  <li>The data included in this website should not be misused.</li>
+                  <li>The data included in this website should not be used for economic purpose without notifying members of NYC DOT.</li>
+                </ul>
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <h3 class="choices">
+            <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="currentColor" class="bi bi-bicycle" viewBox="0 0 16 16">
+                <path d="M4 4.5a.5.5 0 0 1 .5-.5H6a.5.5 0 0 1 0 1v.5h4.14l.386-1.158A.5.5 0 0 1 11 4h1a.5.5 0 0 1 0 1h-.64l-.311.935.807 1.29a3 3 0 1 1-.848.53l-.508-.812-2.076 3.322A.5.5 0 0 1 8 10.5H5.959a3 3 0 1 1-1.815-3.274L5 5.856V5h-.5a.5.5 0 0 1-.5-.5zm1.5 2.443-.508.814c.5.444.85 1.054.967 1.743h1.139L5.5 6.943zM8 9.057 9.598 6.5H6.402L8 9.057zM4.937 9.5a1.997 1.997 0 0 0-.487-.877l-.548.877h1.035zM3.603 8.092A2 2 0 1 0 4.937 10.5H3a.5.5 0 0 1-.424-.765l1.027-1.643zm7.947.53a2 2 0 1 0 .848-.53l1.026 1.643a.5.5 0 1 1-.848.53L11.55 8.623z"/>
+            </svg>
+            Let's Visualize:
+        </h3>
+
+
+        <div class="selection">
+            <div class="form-check form-switch">
+                <input class="form-check-input" type="checkbox" id="bikelanes" unchecked>
+                <label class="form-check-label" for="flexSwitchCheckChecked">Bike Lanes</label>
+            </div>
+            <div class="form-check form-switch">
+              <input class="form-check-input" type="checkbox" id="bike-stations" unchecked>
+              <label class="form-check-label" for="flexSwitchCheckChecked">Bike Stations</label>
+          </div>
+            <div class="form-check form-switch">
+              <input class="form-check-input" type="checkbox" id="bike-trips" checked>
+              <label class="form-check-label" for="flexSwitchCheckChecked">Riderships</label>
+            </div>
+        </div>
+        <br>
+        <h3 class="choices">
+          <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="currentColor" class="bi bi-bicycle" viewBox="0 0 16 16">
+            <path d="M4 4.5a.5.5 0 0 1 .5-.5H6a.5.5 0 0 1 0 1v.5h4.14l.386-1.158A.5.5 0 0 1 11 4h1a.5.5 0 0 1 0 1h-.64l-.311.935.807 1.29a3 3 0 1 1-.848.53l-.508-.812-2.076 3.322A.5.5 0 0 1 8 10.5H5.959a3 3 0 1 1-1.815-3.274L5 5.856V5h-.5a.5.5 0 0 1-.5-.5zm1.5 2.443-.508.814c.5.444.85 1.054.967 1.743h1.139L5.5 6.943zM8 9.057 9.598 6.5H6.402L8 9.057zM4.937 9.5a1.997 1.997 0 0 0-.487-.877l-.548.877h1.035zM3.603 8.092A2 2 0 1 0 4.937 10.5H3a.5.5 0 0 1-.424-.765l1.027-1.643zm7.947.53a2 2 0 1 0 .848-.53l1.026 1.643a.5.5 0 1 1-.848.53L11.55 8.623z"/>
+          </svg>
+          Scenarios
+        </h3>
+
+        <div class="selection">
+
+          <ul class="list-group">
+            <li class="list-group-item list-group-item-light">Central Part Transverses</li>
+           
+            <div class="choices">
+
+              <div class="form-check">
+                <input type="checkbox" value="" id="scenario1-protected">
+                <label class="scenario-type" for="scenario1-protected">Protected Bikelanes</label>
+              </div>
+
+              <div class="form-check">
+                <input type="checkbox" value="" id="scenario1-unprotected">
+                <label class="scenario-type" for="scenario1-unprotected">Unprotected Bikelanes</label>
+              </div>
+
+            </div>
+
+            <li class="list-group-item list-group-item-light">Upper Manhattan</li>
+
+              <div class="choices">
+
+                <div class="form-check">
+                  <input type="checkbox" value="" id="scenario2-protected">
+                  <label class="scenario-type" for="scenario2-protected">Protected Bikelanes</label>
+                </div>
+
+              </div>
+
+            <li class="list-group-item list-group-item-light">Brooklyn</li>
+              <div class="choices">
+
+                <div class="form-check">
+                  <input type="checkbox" value="" id="scenario3-protected">
+                  <label class="scenario-type" for="scenario3-protected">Protected Bikelanes</label>
+                </div>
+  
+                <div class="form-check">
+                  <input type="checkbox" value="" id="scenario3-unprotected">
+                  <label class="scenario-type" for="scenario3-unprotected">Unprotected Bikelanes</label>
+                </div>
+
+              </div>
+
+
+          </ul>
+
+
+        </div>
+
+        <br>
+        <a class="btn btn-outline-light" href="https://github.com/kateesutt/practicum-nycdot" role="button" type="button" id="repo-link">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-github" viewBox="0 0 16 16">
+            <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.012 8.012 0 0 0 16 8c0-4.42-3.58-8-8-8z"/>
+          </svg>
+          GitHub Repo
+        </a>
+
+      
+    </div>
+
+
+     <!-- Legend -->
+     <div class="legend">
+    <p class="legend-text"><b>Number of Bike Trips</b></p>
+    <ul>
+      <div class="legend-box" style="background: #6FA5C9; border: 1px #6FA5C9" id="one"></div>
+      <p class="legend-text">0</p>
+      <div class="legend-box" style="background: #7DD8BD; border: 1px #7DD8BD" id="two"></div>
+      <p class="legend-text">less than 10</p>
+      <div class="legend-box" style="background: #E6F598; border: 1px #E6F598" id="three"></div>
+      <p class="legend-text">less than 30</p>
+      <div class="legend-box" style="background: #FFFFBF; border: 1px #FFFFBF" id="four"></div>
+      <p class="legend-text">less than 70</p>
+      <div class="legend-box" style="background: #FEE08B; border: 1px #FEE08B" id="five"></div>
+      <p class="legend-text">less than 130</p>
+      <div class="legend-box" style="background: #FDAE61; border: 1px #FDAE61" id="six"></div>
+      <p class="legend-text">less than 250</p>
+      <div class="legend-box" style="background: #F46D43; border: 1px #F46D43" id="seven"></div>
+      <p class="legend-text">less than 350</p>
+      <div class="legend-box" style="background: #D53E4F; border: 1px #D53E4F" id="eight"></div>
+      <p class="legend-text">Over 350</p>
+    </ul>
+    </div>
+
+
+    <div class="legend2">
+      <p class="legend-text"><b>% Difference</b></p>
+      <ul>
+        <div class="legend-box" style="background: #1E6091; border: 1px #1E6091" id="one"></div>
+        <p class="legend-text">less than -50%</p>
+        <div class="legend-box" style="background: #2897CE; border: 1px #2897CE" id="two"></div>
+        <p class="legend-text">less than -10%</p>
+        <div class="legend-box" style="background: #85D3EB; border: 1px #85D3EB" id="three"></div>
+        <p class="legend-text">less than 0 %</p>
+        <div class="legend-box" style="background: #D9ED92; border: 1px #D9ED92" id="four"></div>
+        <p class="legend-text">less than 5%</p>
+        <div class="legend-box" style="background: #99D98C; border: 1px #99D98C" id="five"></div>
+        <p class="legend-text">less than 10%</p>
+        <div class="legend-box" style="background: #52B69A; border: 1px #52B69A" id="six"></div>
+        <p class="legend-text">less than 30%</p>
+        <div class="legend-box" style="background: #FFBA08; border: 1px #FFBA08" id="seven"></div>
+        <p class="legend-text">less than 50%</p>
+        <div class="legend-box" style="background: #FAA307; border: 1px #FAA307" id="eight"></div>
+        <p class="legend-text">less than 100%</p>
+        <div class="legend-box" style="background: #E85D04; border: 1px #E85D04" id="nine"></div>
+        <p class="legend-text">less than 200%</p>
+        <div class="legend-box" style="background: #DC2F02; border: 1px #DC2F02" id="ten"></div>
+        <p class="legend-text">less than 300%</p>
+        <div class="legend-box" style="background: #9D0208; border: 1px #9D0208" id="elev"></div>
+        <p class="legend-text">less than 500%</p>
+        <div class="legend-box" style="background: #370617; border: 1px #370617" id="twelv"></div>
+        <p class="legend-text">Over 500%</p>
+      </ul>
+    </div>
+
+
+    
+
+    
+
+    <!-- Map -->
+    <div id="map" class="map"></div>
+    <!-- Javascript Imports -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/js/bootstrap.bundle.min.js" integrity="sha384-JEW9xMcG8R+pH31jmWH6WWP0WintQrMb4s7ZOdauHnUtxwoG2vI5DkLtS3qm9Ekf" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.8.3/underscore-min.js" integrity="sha256-obZACiHd7gkOk9iIL/pimWMTJ4W/pBsKu+oZnSeBIek=" crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"
+            integrity="sha512-XQoYMqMTK8LvdxXYG3nZ448hOEQiglfqkJs1NOQV44cWnUrBc8PkAOcXy20w0vlaXaVUearIOBhiXZ5V3ynxwA=="
+            crossorigin=""></script>
+
+    <!-- Place framework JS code here. -->
+    <script src="js/page.js"></script>
+  </body>
+</html>
