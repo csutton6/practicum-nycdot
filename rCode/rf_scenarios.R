@@ -182,83 +182,66 @@ OOF_preds <- data.frame(dplyr::select(rf_best_OOF_preds, .pred, Count), model = 
   ungroup()
 
 
-#Scenarios
+###===Scenarios===##
 
+##Read Data
 scenarios <- st_read("E:/NYCDOT/Scenarios/scenariosShort.shp")
-
 neighborhoods <- st_read("E:/NYCDOT/NYCneighborhood/nynta.shp")
-mapview(list(scenarios, scenario1))
-
-scenario1_range <- neighborhoods %>% filter(NTACode == "MN99")
-
-scenario1 <- scenarios[scenario1_range,] %>% 
-  filter(SegmentID != "0137647" & SegmentID != "0134012" &
-           SegmentID != "0150953" & SegmentID != "0150951" &
-           SegmentID != "0071072" & SegmentID != "0071082")
-
-scenario1 <- scenario1 %>%
-  filter(SegmentID != "0111014" & SegmentID != "0071078" & SegmentID != "0108162")
-
-scenario1 <- scenario1 %>%
-  filter(SegmentID != "9000012")
-
-scenario1 <- scenario1 %>%
-  filter(SegmentID != "0071084")
-
-scenario1 <- scenario1 %>%
-  filter(SegmentID != "9000011")
-
-mapview(scenario_23)
-
-
-scenario_23 <- scenarios %>%
-  filter(! SegmentID %in% scenario1$SegmentID)
-
 boro <- st_read("E:/NYCDOT/Borough Boundaries/geo_export_4c045526-dcb9-4e1a-b602-59b848e20e6a.shp")
 
 boro <- boro %>%
   filter(boro_name == "Brooklyn")
-boro <- boro %>% st_transform(st_crs(scenario_23))
+boro <- boro %>% st_transform(st_crs(scenarios))
 
 boro2 <- st_read("E:/NYCDOT/Borough Boundaries/geo_export_4c045526-dcb9-4e1a-b602-59b848e20e6a.shp")
 boro2 <- boro2 %>%
   filter(boro_name == "Manhattan" | boro_name == "Bronx")
-boro2 <- boro2 %>% st_transform(st_crs(scenario_23))
+boro2 <- boro2 %>% st_transform(st_crs(scenarios))
 
-mapview(list(boro2, scenario_23))
+##Find and Clean Range
+scenario1_range <- neighborhoods %>% filter(NTACode == "MN99")
+scenario1 <- scenarios[scenario1_range,] %>% 
+  filter(SegmentID != "0137647" & SegmentID != "0134012" &
+           SegmentID != "0150953" & SegmentID != "0150951" &
+           SegmentID != "0071072" & SegmentID != "0071082")
+scenario1 <- scenario1 %>%
+  filter(SegmentID != "0111014" & SegmentID != "0071078" & SegmentID != "0108162")
+scenario1 <- scenario1 %>%
+  filter(SegmentID != "9000012")
+scenario1 <- scenario1 %>%
+  filter(SegmentID != "0071084")
+scenario1 <- scenario1 %>%
+  filter(SegmentID != "9000011")
 
 
+scenario_23 <- scenarios %>%
+  filter(! SegmentID %in% scenario1$SegmentID)
 scenario2 <- scenario_23[boro2,]
 
 
 scenario3 <- scenario_23 %>%
   filter(! SegmentID %in% scenario2$SegmentID)
 
+#check
+mapview(list(scenario1, scenario2, scenario3), color = list("red", "blue", "purple"))
+
+#Make Samples
 sample1 <- info.Aug %>%
   filter(SegmentID %in% scenario1$SegmentID)
-
-mapview(list(scenario3, scenario2), color=list("red", "blue"))
-mapview(list(scenario2, boro))
 
 sample2 <- info.Aug %>%
   filter(SegmentID %in% scenario2$SegmentID)
 
 sample3 <- info.Aug %>% filter(SegmentID %in% scenario3$SegmentID)
 
-mapview(list(scenario1, scenario2, scenario3), color = list("red", "blue", "purple"))
-
-st_write(scenario3, "scenario3.shp")
-
-
-mapview(list(sample1, sample2, sample3), color = list("red", "blue", "purple"))
-
+#Edit
 sample1 <- sample1 %>%
   filter(bikeLaneLv == "noBikeLane")
 scenario1 <- scenario1 %>%
   filter(SegmentID %in% sample1$SegmentID)
 
+#check
 mapview(sample2, zcol="bikeLaneLv")
-
 mapview(sample3, zcol="bikeLaneLv")
 
 sample3 <- sample3 %>%
@@ -274,16 +257,16 @@ scenario3_buffer <- st_read("E:/NYCDOT/Scenarios/buffered/scenario3_Buffer.shp")
 
 mapview(list(scenario1_buffer, scenario2_buffer, scenario3_buffer))
 
+
 #### Predictions
-
 #reference:https://hansjoerg.me/2020/02/09/tidymodels-for-machine-learning/
-Brooklyn <- boro %>% st_transform(st_crs(info.Aug))
 
+Brooklyn <- boro %>% st_transform(st_crs(info.Aug))
 Manhattan <- boro2 %>%
   filter(boro_name == "Manhattan") %>% st_transform(st_crs(info.Aug))
 
-info.Brooklyn <- info.Aug[Brooklyn,] 
 
+info.Brooklyn <- info.Aug[Brooklyn,] 
 info.Manhattan <- info.Aug[Manhattan,]
 
 info.Bk_model <- info.Brooklyn %>% st_drop_geometry() %>% dplyr::select(selectedF)
@@ -293,8 +276,8 @@ sample1 <- sample1 %>% dplyr::select(selectedF)
 sample2 <- sample2 %>% dplyr::select(selectedF)
 sample3 <- sample3 %>% dplyr::select(selectedF)
 
-#Predict scenario1
 
+#Predict scenario1
 rf_Manhattan_fit <- fit(rf_best_wf, data = info.M_model)
 
 rf_final_Mfit <- pull_workflow_fit(rf_Manhattan_fit)
@@ -332,19 +315,6 @@ sample1.info <- sample1 %>%
 sample1.info <- sample1.info %>% st_transform(st_crs(scenario1))
 
 #join back to road segment
-scenario1_info <- merge(scenario1, sample1.info %>% st_drop_geometry(), by="SegmentID", left=TRUE)
-
-scenario1_info <- distinct(scenario1_info,SegmentID,.keep_all = T)
-
-scenario1_info <- scenario1_info %>%
-  dplyr::select(Street, SegmentID,Count,pre_protect, diff_protect, pre_unprotect, diff_unprotect)
-
-scenario1_info <- scenario1_info %>% st_transform(st_crs("EPSG:4326"))
-
-mapview(scenario1_info) 
-
-
-
 scenario1_infonew <- st_join(scenario1_buffer %>% st_transform(st_crs(sample1.info)),
                              sample1.info, left=TRUE, join = st_intersects)
 
@@ -361,11 +331,7 @@ st_write(scenario1_infonew, "scenario1.geojson")
 
 
 
-
-
-
-
-##Predict Scenario2
+##==Predict Scenario2
 
 #make different versions of sample 1 data
 sample2_protect <- sample2 %>%
@@ -375,7 +341,7 @@ sample2_protect$.pred <- predict(rf_final_Mfit,
                                  new_data = bake(dia_rec3_M ,sample2_protect))$.pred
 
 sample2_protect <- sample2_protect %>%
-  mutate(Count, ifelse(Count == 0, 0.01, Count))
+  mutate(Count, ifelse(Count == 0, 0.01, Count)) #avoid INF
 
 names(sample2_protect)[24] <- "Count_c"
 
@@ -408,7 +374,7 @@ mapview(scenario2_info)
 st_write(scenario2_info, "scenario2.geojson")
 
 
-#Scenario3
+##==Predict Scenario3
 rf_Brooklyn_fit <- fit(rf_best_wf, data = info.Bk_model)
 
 rf_final_Bfit <- pull_workflow_fit(rf_Brooklyn_fit)
@@ -427,7 +393,7 @@ sample3_unprotect <- sample3 %>%
 
 #make predictions
 
-#Scenario1
+#Scenario3
 sample3_protect$.pred <- predict(rf_final_Bfit, 
                                  new_data = bake(dia_rec3_B, sample3_protect))$.pred
 
