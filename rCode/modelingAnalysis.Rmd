@@ -1,0 +1,177 @@
+---
+title: "Modeling and Error Analysis"
+author: "Stella (Xintian) Li"
+date: "5/7/2021"
+output:
+  html_document:
+    toc: true
+    toc_depth: 5
+    toc_float: true
+    number_sections: true
+    theme: united
+    code_folding: hide
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+# Modeling
+## Model Building
+In this part, we used the features we selected in the feature engineering part to build machine learning models and predict the bike counts on each road segment in our study area. We will compare between different models to see how well they account for the variance in bike ridership and we will also compare how well they predict unseen data. Then we will choose the model with the best performance to predict the bike counts in our study. The three models we used are:
+
+* Linear Model: OLS linear regression model. As mentioned in the exploratory analysis part, the bike counts data are not normally distributed. Therefore when training the linear model, we log-transformed our dependent variable to make the data more conforms to the linear regression assumption.
+
+* Poisson Model: A log-linear model. Poisson Model is especially suitable for predicting count data. Because our data are counts data with large number of 0 and the prediction residuals are not normally distributed, Poisson might be a good choice. 
+
+* Random Forest: An ensemble learning method that operates by constructing a multitude of decision trees.
+
+We first split our data into 80%/20% training set and test set. Then we performs 10 fold cross validation to tune the parameters as well as calculating the training accuracy. The training accuracy will tell us how well our models fit on the training data. We also calculated test accuracy because testing accuracy will tell us how well our models predict unseen data. By comparing the performances of three models, we will decide which one we will choose to predict bike counts in the study area.
+
+## Model Evaluation
+After tuning the parameters and training the model, we first plot the MAE (Mean Absolute Error) and RMSE (Root Mean Square Error) of the training set using the optimized parameter for each model. 
+
+<!-- INSERT MAE_RMSE.png HERE -->
+```{r}
+grid.arrange(
+  ggplot(data = OOF_preds %>% 
+         dplyr::select(model, MAE) %>% 
+         distinct() , 
+       aes(x = model, y = MAE,group = 1)) +
+  geom_path(color = "red") +
+  geom_label(aes(label = round(MAE,1))) + 
+  theme_bw() +
+  labs(x = "Model",
+       y = "Mean Absolute Error",
+       title = "MAE by model type"),
+  ggplot(data = OOF_preds %>% 
+         dplyr::select(model, RMSE) %>% 
+         distinct() , 
+       aes(x = model, y = RMSE,group = 1)) +
+  geom_path(color = "red") +
+  geom_label(aes(label = round(RMSE,1))) + 
+  theme_bw() +
+  labs(x = "Model",
+       y = "Root Mean Square Error",
+       title = "RMSE by model type"),
+  ncol =2
+)
+
+```
+As you can see, the random forest has lowest MAE and RMSE among the three models, however, the differences of these two statistics are not that much between the three models. We then plot the "Actual vs. Predicted" scatter plots and see the model performance when predicting training set. 
+
+<!-- INSERT O_vs_P_tra.png HERE -->
+```{r message=F}
+# Scatter plots: Observed vs Predicted  
+ggplot(OOF_preds, aes(y=.pred , x = Count,group = model))+ 
+  geom_point(alpha = 0.3) +
+  coord_equal() +
+  geom_abline(linetype = "dashed",color = "red") +
+  geom_smooth(method="lm", color = "blue") +
+  facet_wrap(~model,ncol = 2)+
+  theme_bw()+
+  ylim(0,500)+
+  xlim(0,500)+
+  labs(x = "Observed",
+       y = "Predicted",
+       title = "Observed vs. Predicted on the training set")
+```
+Three models all have issues of underpredicting. However, among the three, linear regression looks least predictive. Poisson and random forest seem to predict the trend using the features selected. Random forest generally predicts bike counts well because it has relatively small variance.
+
+Let's see the performance of the models when predicting test data. It looks like that when predicting test set, the three models tend to have similar performance as to the training set prediction.
+<!-- INSERT test_Err.png HERE -->
+```{r}
+grid.arrange(
+  ggplot(val_preds, aes(y=.pred , x = Count,group = model))+ 
+  geom_point(alpha = 0.3) +
+  coord_equal() +
+  geom_abline(linetype = "dashed",color = "red") +
+  geom_smooth(method="lm", color = "blue") +
+  facet_wrap(~model,ncol = 2)+
+  theme_bw()+
+  ylim(0,500)+
+  xlim(0,500)+
+  labs(x = "Observed",
+       y = "Predicted",
+       title = "Observed vs. Predicted on the testing set"),
+  ggplot(data = val_preds %>%
+         dplyr::select(model, MAE) %>%
+         distinct() ,
+       aes(x = model, y = MAE,group = 1)) +
+  geom_path(color = "red") +
+  geom_label(aes(label = round(MAE,1))) +
+  theme_bw()+
+  labs(x = "Model",
+       y = "Mean Absolute Error",
+       title = "MAE by model type"),
+  ncol=2
+  
+)
+
+
+```
+We also plot the distribution of absolute errors in test set. The first plot shows the distribution of absolute errors less than 90 (relatively small errors). As is shown below, linear regression and random forest produce more small errors which is less than 5. However, all models have long tails, indicating some large errors.
+
+<!-- hist1.png here -->
+```{r}
+ggplot()+geom_histogram(data = val_preds,aes(absE),binwidth = 1,fill="#457b9d")+
+  facet_wrap(~model,ncol=1)+
+  xlim(0,100) +
+  theme_bw() +
+  labs(x = "Absolute Error",
+       title = "The histogram of absolute error (Error < 90)")
+  
+```
+The plot below shows large errors which is larger than 90. From this plot we can see that random forest actually performs better and produce less large errors.
+<!-- hist2.png here -->
+```{r}
+ggplot()+geom_histogram(data = val_preds,aes(absE),binwidth = 1,fill="#457b9d")+
+  facet_wrap(~model,ncol=1) + 
+  xlim(90,800) + 
+  theme_bw() + 
+  labs(x = "Absolute Error",
+       title = "The histogram of absolute error (Error > 90)")
+```
+Therefore, we finally decide to use random forest to predict the bike ride counts in our study area.
+
+# Prediction & Error Analysis
+After predicting the bike counts using random forest, we do some analysis on the prediction errors.
+
+<!-- prediction_absE.png here -->
+```{r}
+grid.arrange(
+  ggplot() +
+  geom_sf(data = boroughs_clip, fill = "#D4D4D4") +
+  geom_sf(data = data.geo, aes(colour = .pred)) +
+  scale_colour_viridis(direction = -1, discrete = FALSE, option="viridis")+
+  labs(title="Predictions") +
+  mapTheme(),
+ggplot() +
+  geom_sf(data = boroughs_clip, fill = "#D4D4D4") +
+  geom_sf(data = data.geo, aes(colour = absE)) +
+  scale_colour_viridis(direction = -1, discrete = FALSE, option="viridis")+
+  labs(title="Absolute predicting Error") +
+  mapTheme(),
+ncol = 2
+)
+
+```
+We can see that most of the large errors are in Manhattan, which has the highest ridership. It is interesting to know that our model are underprediting bike counts on roads with large ridership. Further study will be needed to figure out the reasons behind.
+<!-- MAEbyboro.png here -->
+```{r}
+ggplot()+
+  geom_sf(data = error.boro, aes(fill=MAE)) +
+  scale_fill_viridis(direction = 1, discrete = FALSE, option="viridis")+
+  labs(title="MAE by borough") + mapTheme()
+```
+
+From the MAE by neigbhorhood plot we can also see that the model is not good at predicting  Manhattan, especially the lower Manhattan.
+<!-- MAEbynta.png here -->
+```{r}
+ggplot()+
+  geom_sf(data = error.nta, aes(fill=MAE)) +
+  scale_fill_viridis(direction = 1, discrete = FALSE, option="viridis")+
+  labs(title="MAE by neighborhoods") + mapTheme()
+```
+
+
+
