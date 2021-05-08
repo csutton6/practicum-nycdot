@@ -521,10 +521,27 @@ Our final model included the following features:
 
 # 5. Modeling
 
-### Model Basics{.tabset}
+### Model Basics
 We modeled Citibike ridership on each street segment in our study area in the first two weeks of August 2020. We chose August 2020 because it was both a warm month good for biking and the first month in which Citibike stations were open in the Bronx, which we felt was important to include. Though bikeshare ridership trends have shifted during the pandemic, we modeled the total ridership over a two week period, so the changes in peak commuting patterns during the COVID-19 pandemic were not a concern for our model. 
 
+### Model Building
+In this part, we used the features we selected in the feature engineering part to build machine learning models and predict the bike counts on each road segment in our study area. We will compare between different models to see how well they account for the variance in bike ridership and we will also compare how well they predict unseen data. Then we will choose the model with the best performance to predict the bike counts in our study. The three models we used are:
 
+* **Linear Model**: OLS linear regression model. As mentioned in the exploratory analysis part, the bike counts data are not normally distributed. Therefore when training the linear model, we log-transformed our dependent variable to make the data more conforms to the linear regression assumption.
+
+* **Poisson Model**: A log-linear model. Poisson Model is especially suitable for predicting count data. Because our data are counts data with large number of 0 and the prediction residuals are not normally distributed, Poisson might be a good choice. 
+
+* **Random Forest**: An ensemble learning method that operates by constructing a multitude of decision trees.
+
+We first split our data into 80%/20% training set and test set. Then we performs 10 fold cross validation to tune the parameters as well as calculating the training accuracy. The training accuracy will tell us how well our models fit on the training data. We also calculated test accuracy because testing accuracy will tell us how well our models predict unseen data. By comparing the performances of three models, we will decide which one we will choose to predict bike counts in the study area.
+
+### Model Evaluation
+After tuning the parameters and training the model, we first plot the MAE (Mean Absolute Error) and RMSE (Root Mean Square Error) of the training set using the optimized parameter for each model.
+
+<center>![MAE_RMSE training](../images/MAE_RMSE.png){width=50%}</center>
+
+As you can see, the random forest has lowest MAE and RMSE among the three models, however, the differences of these two statistics are not that much between the three models. We then plot the "Actual vs. Predicted" scatter plots and see the model performance when predicting training set. 
+<center>![MAE_RMSE training](../images/MAE_RMSE.png){width=50%}</center>
 
 # 6. Scenarios
 We used our model to explore several scenarios where new bike lanes could be added in the future. Each scenario is comprised of several similar streets that could serve as alternatives to each other. For example, the Central Park Transverses Scenario is made up of 4 streets that cross Central Park, none of which have bike lanes. Comparing the predicted increase ridership across these scenarios could be a helpful tool for planners to decide which alternative would be most impactful.
