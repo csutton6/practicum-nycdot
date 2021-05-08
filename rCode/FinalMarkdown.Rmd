@@ -567,16 +567,19 @@ After predicting the bike counts using random forest, we do some analysis on the
 
 We can see that most of the large errors are in Manhattan, which has the highest ridership. It is interesting to know that our model are underprediting bike counts on roads with large ridership. Further study will be needed to figure out the reasons behind.
 <!-- MAEbyboro.png here -->
-<center>![error map each boro](../images/MAEbyboro.png){width=80%}</center>
+<center>![error map each boro](../images/MAEbyboro.png){width=50%}</center>
 
 From the MAE by neigbhorhood plot we can also see that the model is not good at predicting  Manhattan, especially the lower Manhattan.
 <!-- MAEbynta.png here -->
-<center>![error map each nta](../images/MAEbynta.png){width=80%}</center>
+<center>![error map each nta](../images/MAEbynta.png){width=60%}</center>
+
+<br> 
 
 # 6. Scenarios
 We used our model to explore several scenarios where new bike lanes could be added in the future. Each scenario is comprised of several similar streets that could serve as alternatives to each other. For example, the Central Park Transverses Scenario is made up of 4 streets that cross Central Park, none of which have bike lanes. Comparing the predicted increase ridership across these scenarios could be a helpful tool for planners to decide which alternative would be most impactful.
 
 <br>
+
 ### 6.1 Scenarios Chosen
 ```{r, echo=FALSE, fig.align='center'}
 
@@ -603,47 +606,72 @@ scenarios_forTable%>%
 
 For each scenario, we predicted the change in ridership that would be expected if a protected or unprotected bikelane were added to each street. In the case of Upper Manhattan, several of the avenues already had an unprotected bike lane, so we only predicted the change in ridership that would be expected from an increase to a protected bike lane. 
 
+<br> 
+
 ### 6.2 Predictions
+
+<br>
 
 #### Scenario 1: Central Park Transverses {.tabset}
 
 All Central Park transverses were predicted to have a higher growth in ridership under a protected than an unprotected bike lane. Unprotected Lane predictions resulted in an increase of around 100% for all 4 streets, but for the protected bike lane the prediction for 97th St was an increase of over 300%. For both types of lane, the 97th St. Traverse also appears to have a higher percent increase in ridership. The street segments with the highest increase in ridership tend to fall toward the edges of the park. This reflects the spatial lag variable because ridership is low on the transverses themselves but high on other roads bordering the park or the loop road in the park. 
 
-##### Protected
-![scenario 1 plot](../images/scenarios/scenario1_1.jpg)
+<br>
 
-![sce 1 map](../images/scenarios/scenario1_protected.jpg)
+##### Protected
+<center>![](../images/scenarios/scenario1_1.jpg){width=60%}</center>
+
+<center>![](../images/scenarios/scenario1_protected.jpg){width=70%}</center>
 
 ##### Unprotected
-![scenario 1 plot 2](../images/scenarios/scenario1_2.jpg)
-![sce 1 map 2](../images/scenarios/scenario1_unprotected.jpg)
+<center>![](../images/scenarios/scenario1_2.jpg){width=60%}</center>
+<center>![](../images/scenarios/scenario1_unprotected.jpg){width=70%}</center>
 
+
+<br>
+<br>
 
 #### Scenario 2: Upper Manhattan
 
 In Upper Manhattan, we only predicted the impact of a protected bike lane since several streets already had an unprotected bike lane. Amsterdam Ave has by far the greatest increase in ridership, at over 300%, while the other two avenues are predicted to have ridership increases of around 100% or 150%. Interestingly, the map shows that a large number of segments on Lenox Ave and Adam Clayton Powell Jr. Boulevard are predicted to have a decrease in ridership, although overall ridership was still predicted to increase.  
 
-![scenario2 plot](../images/scenarios/scenario2_1.jpg)
+<center>![](../images/scenarios/scenario2_1.jpg){width=60%}</center>
 
-![scenario2 map](../images/scenarios/scenario2.jpg)
+<center>![](../images/scenarios/scenario2.jpg){width=70%}</center>
 
 
+<br>
+<br>
 
-#### Brooklyn{.tabset}
+#### Scenario 3: Brooklyn{.tabset}
 
 In Brooklyn, our model predicted that Meeker St. would show the largest increase in ridership, at almost 400% with a protected bike lane and 200% with an unprotected bike lane. Myrtle Avenue was projected to have the least growth in ridership, with Atlantic Avenue, Bushwick Avenue, and Flatbush Avenue falling in the middle. Due to the orientation of Meeker St., the entire street is located in a more densely traveled part of the Citibike network compared to other streets in this scenario which exend out to the edge of the study area. This might help explain the higher predictions for Meeker St., but comparing the % growth in ridership was meant to normalize for these effects. 
 
+<br> 
+
 ##### Protected
-![sce 3 protect plot](../images/scenarios/scenario3_1.jpg)
-![scenario3 plot](../images/scenarios/scenario3_protected.jpg)
+
+<br>
+
+<center>![sce 3 protect plot](../images/scenarios/scenario3_1.jpg){width=60%}</center>
+<center>![scenario3 plot](../images/scenarios/scenario3_protected.jpg){width=70%}</center>
 
 
 ##### Unprotected
-![sce 3 unprotect plot](../images/scenarios/scenario3_2.jpg)
-![scenario2 plot](../images/scenarios/scenario3_unprotected.jpg)
+
+<br>
+
+<center>![sce 3 unprotect plot](../images/scenarios/scenario3_2.jpg){width=60%}</center>
+<center>![scenario2 plot](../images/scenarios/scenario3_unprotected.jpg){width=70%}</center>
 
 
-Though imperfect, this model can still offer interesting insights into predicted ridership for several bike planning scenarios in New York City. With further revision, this type of analysis could be predicted with greater accuracy and expanded to other streets in the city. 
+<br> 
+
+### Next Steps
+
+Though the model performance leaves room for improvement, this model can still offer interesting insights into predicted ridership for several bike planning scenarios in New York City. With further revision, this type of analysis could be predicted with greater accuracy and expanded to other streets in the city. 
+
+<br> 
 
 # 7. Code Appendix
 
