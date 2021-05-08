@@ -521,10 +521,10 @@ Our final model included the following features:
 
 # 5. Modeling
 
-### Model Basics
+### 5.1 Model Basics
 We modeled Citibike ridership on each street segment in our study area in the first two weeks of August 2020. We chose August 2020 because it was both a warm month good for biking and the first month in which Citibike stations were open in the Bronx, which we felt was important to include. Though bikeshare ridership trends have shifted during the pandemic, we modeled the total ridership over a two week period, so the changes in peak commuting patterns during the COVID-19 pandemic were not a concern for our model. 
 
-### Model Building
+### 5.2 Model Building
 In this part, we used the features we selected in the feature engineering part to build machine learning models and predict the bike counts on each road segment in our study area. We will compare between different models to see how well they account for the variance in bike ridership and we will also compare how well they predict unseen data. Then we will choose the model with the best performance to predict the bike counts in our study. The three models we used are:
 
 * **Linear Model**: OLS linear regression model. As mentioned in the exploratory analysis part, the bike counts data are not normally distributed. Therefore when training the linear model, we log-transformed our dependent variable to make the data more conforms to the linear regression assumption.
@@ -535,13 +535,43 @@ In this part, we used the features we selected in the feature engineering part t
 
 We first split our data into 80%/20% training set and test set. Then we performs 10 fold cross validation to tune the parameters as well as calculating the training accuracy. The training accuracy will tell us how well our models fit on the training data. We also calculated test accuracy because testing accuracy will tell us how well our models predict unseen data. By comparing the performances of three models, we will decide which one we will choose to predict bike counts in the study area.
 
-### Model Evaluation
+### 5.3 Model Evaluation
 After tuning the parameters and training the model, we first plot the MAE (Mean Absolute Error) and RMSE (Root Mean Square Error) of the training set using the optimized parameter for each model.
 
 <center>![MAE_RMSE training](../images/MAE_RMSE.png){width=50%}</center>
 
 As you can see, the random forest has lowest MAE and RMSE among the three models, however, the differences of these two statistics are not that much between the three models. We then plot the "Actual vs. Predicted" scatter plots and see the model performance when predicting training set. 
-<center>![MAE_RMSE training](../images/MAE_RMSE.png){width=50%}</center>
+
+<center>![scatter plot training](../images/O_vs_P_tra.png){width=50%}</center>
+
+Three models all have issues of underpredicting. However, among the three, linear regression looks least predictive. Poisson and random forest seem to predict the trend using the features selected. Random forest generally predicts bike counts well because it has relatively small variance.
+
+Let's see the performance of the models when predicting test data. It looks like that when predicting test set, the three models tend to have similar performance as to the training set prediction.
+
+<center>![error analysis test set](../images/test_Err.png){width=80%}</center>
+
+We also plot the distribution of absolute errors in test set. The first plot shows the distribution of absolute errors less than 90 (relatively small errors). As is shown below, linear regression and random forest produce more small errors which is less than 5. However, all models have long tails, indicating some large errors.
+
+<center>![distirbution of error1](../images/hist1.png){width=80%}</center>
+
+The plot below shows large errors which is larger than 90. From this plot we can see that random forest actually performs better and produce less large errors.
+
+<center>![distirbution of error2](../images/hist2.png){width=80%}</center>
+
+Therefore, we finally decide to use random forest to predict the bike ride counts in our study area.
+
+# 5.4 Prediction & Error Analysis
+After predicting the bike counts using random forest, we do some analysis on the prediction errors.
+
+<center>![error map and pred map](../images/prediction_absE.png){width=80%}</center>
+
+We can see that most of the large errors are in Manhattan, which has the highest ridership. It is interesting to know that our model are underprediting bike counts on roads with large ridership. Further study will be needed to figure out the reasons behind.
+<!-- MAEbyboro.png here -->
+<center>![error map each boro](../images/MAEbyboro.png){width=80%}</center>
+
+From the MAE by neigbhorhood plot we can also see that the model is not good at predicting  Manhattan, especially the lower Manhattan.
+<!-- MAEbynta.png here -->
+<center>![error map each nta](../images/MAEbynta.png){width=80%}</center>
 
 # 6. Scenarios
 We used our model to explore several scenarios where new bike lanes could be added in the future. Each scenario is comprised of several similar streets that could serve as alternatives to each other. For example, the Central Park Transverses Scenario is made up of 4 streets that cross Central Park, none of which have bike lanes. Comparing the predicted increase ridership across these scenarios could be a helpful tool for planners to decide which alternative would be most impactful.
@@ -1527,6 +1557,424 @@ for (i in 1:nrow(info.Aug)) {
 Running the Model
 ```{r, eval=FALSE, echo=TRUE}
 #Running the Model
+####====Regression====####
+
+options(scipen = 999)
+rm(list = ls())
+
+#Package installs -------------------------------------------------------------
+load.fun <- function(x) { 
+  x <- as.character(x) 
+  if(isTRUE(x %in% .packages(all.available=TRUE))) { 
+    eval(parse(text=paste("require(", x, ")", sep=""))) 
+    print(paste(c(x, " : already installed; requiring"), collapse=''))
+  } else { 
+    #update.packages()
+    print(paste(c(x, " : not installed; installing"), collapse=''))
+    eval(parse(text=paste("install.packages('", x, "')", sep=""))) 
+    print(paste(c(x, " : installed and requiring"), collapse=''))
+    eval(parse(text=paste("require(", x, ")", sep=""))) 
+  } 
+} 
+
+########### Required Packages ###########
+packages = c("bayesplot", "lme4", "rstan", "shinystan", "RcppEigen",
+             "tidyverse", "tidyr", "AmesHousing", "broom", "caret", "dials", "doParallel", "e1071", "earth",
+             "ggrepel", "glmnet", "ipred", "klaR", "kknn", "pROC", "rpart", "randomForest",
+             "sessioninfo", "tidymodels","ranger", "recipes", "workflows", "themis","xgboost",
+             "sf", "nngeo", "mapview","poissonreg",'gridExtra')
+
+for(i in seq_along(packages)){
+  packge <- as.character(packages[i])
+  load.fun(packge)
+}
+
+
+#read in data from feature engineering
+load("C:/Users/xinti/Box/MUSA_800_Practicum/Data/RHistoryData/model_clean_xl03.RData")
+
+
+rm(list=setdiff(ls(), "info.Aug"))
+gc()
+info.Aug <- info.Aug %>% filter(Count<400)
+selectedP <- c("bikeLaneLv" , 'dist.lane' , 'Number_Tra' , 'StreetWidt' , 'TRUCK_ROUT' , 'citibike.Buffer_small' , 'isMH' ,
+               'pWhite' , 'MedRent' , 'pNoVeh' , 'pSubway' , 
+               'sidewalk_caf_nn3'  , 'bigPark' , 'isGreenway' , 'subway_nn5' ,
+               'jobs_in_tract','density_retail','density_office','ntaname',"avgCount5")
+selectedF <- c("bikeLaneLv" , 'dist.lane' , 'Number_Tra' , 'StreetWidt' , 'TRUCK_ROUT' , 'citibike.Buffer_small' , 'isMH' ,
+               'pWhite' , 'MedRent' , 'pNoVeh' , 'pSubway' , 
+               'sidewalk_caf_nn3'  , 'bigPark' , 'isGreenway' , 'subway_nn5' ,
+               'jobs_in_tract','density_retail','density_office','ntaname','Count',"avgCount5",'SegmentID')
+#Check NAs
+info.Aug.model <- info.Aug %>% st_drop_geometry() %>% dplyr::select(selectedF)
+info.Aug.geo <- info.Aug %>% dplyr::select(SegmentID,geometry)
+
+
+#Create dataset without NAs
+data <- info.Aug.model %>%
+  drop_na()
+#Set seed to make your practive producible
+set.seed(717)
+
+theme_set(theme_bw())
+
+"%!in%" <- Negate("%in%")
+g <- glimpse
+
+data$originalCount = data$Count
+data$Count = data$Count+1
+data$isMH = as.character(data$isMH)
+data$bigPark = as.character(data$bigPark)
+data$isGreenway = as.character(data$isGreenway)
+
+#Slipt the data into training and testing sets
+data_split <- rsample::initial_split(data, strata = "Count", prop = 0.75)
+train.set_wtID <- rsample::training(data_split)
+test.set_wtID  <- rsample::testing(data_split)
+
+train.set <- train.set_wtID %>% dplyr::select(selectedP,Count,originalCount) 
+test.set <- test.set_wtID %>% dplyr::select(selectedP,Count,originalCount) 
+
+
+cv_splits <- rsample::vfold_cv(train.set, strata = "Count", k = 10)
+print(cv_splits)
+
+
+#Create recipe
+model_rec_lm <- recipe(Count ~ bikeLaneLv + dist.lane + Number_Tra+StreetWidt+TRUCK_ROUT+citibike.Buffer_small+isMH+
+                       pWhite+MedRent+pNoVeh+pSubway+
+                       sidewalk_caf_nn3+bigPark+isGreenway+subway_nn5+
+                       jobs_in_tract+density_retail+density_office+ntaname+avgCount5, data = train.set) %>% 
+  update_role(ntaname, new_role = "ntaname") %>% 
+  step_log(Count) %>% 
+  step_dummy(all_nominal()) %>%
+  step_zv(all_predictors()) %>%
+  step_center(dist.lane, StreetWidt,MedRent,sidewalk_caf_nn3,
+              subway_nn5, jobs_in_tract,density_retail,density_office,avgCount5) %>%
+  step_scale(dist.lane, StreetWidt,MedRent,sidewalk_caf_nn3,
+             subway_nn5, jobs_in_tract,density_retail,density_office,avgCount5) #%>% #put on standard deviation scale
+
+glimpse(model_rec_lm %>% prep() %>% juice())
+
+
+model_rec <- recipe(originalCount ~ bikeLaneLv + dist.lane + Number_Tra+StreetWidt+TRUCK_ROUT+citibike.Buffer_small+isMH+
+                      pWhite+MedRent+pNoVeh+pSubway+
+                      sidewalk_caf_nn3+bigPark+isGreenway+subway_nn5+
+                      jobs_in_tract+density_retail+density_office+ntaname+avgCount5, data = train.set) %>% 
+  update_role(ntaname, new_role = "ntaname") %>% 
+  step_dummy(all_nominal()) %>%
+  step_zv(all_predictors()) %>%
+  step_center(dist.lane, StreetWidt,MedRent,sidewalk_caf_nn3,
+              subway_nn5, jobs_in_tract,density_retail,density_office,avgCount5) %>%
+  step_scale(dist.lane, StreetWidt,MedRent,sidewalk_caf_nn3,
+             subway_nn5, jobs_in_tract,density_retail,density_office,avgCount5) #%>% #put on standard deviation scale
+
+glimpse(model_rec %>% prep() %>% juice())
+
+
+# library(poissonreg)
+
+lm_plan <- 
+  linear_reg() %>% 
+  set_engine("lm")
+
+
+ps_plan <- 
+  poissonreg::poisson_reg() %>% 
+  set_engine("glm")
+
+rf_plan <- parsnip::rand_forest() %>%
+  parsnip::set_args(mtry  = tune()) %>%
+  parsnip::set_args(min_n = tune()) %>%
+  parsnip::set_args(trees = 2000) %>% 
+  parsnip::set_engine("ranger", importance = "impurity") %>% 
+  parsnip::set_mode("regression")
+
+
+
+# GridSearch
+rf_grid <- expand.grid(mtry = c(3,6,9), 
+                       min_n = c(100,500,800))
+
+
+#Create workflow
+lm_wf <-
+  workflows::workflow() %>% 
+  add_recipe(model_rec_lm) %>% 
+  add_model(lm_plan)
+
+ps_wf <-
+  workflow() %>% 
+  add_recipe(model_rec) %>% 
+  add_model(ps_plan)
+
+rf_wf <-
+  workflow() %>% 
+  add_recipe(model_rec) %>% 
+  add_model(rf_plan)
+
+# fit model to workflow and calculate metrics
+control <- tune::control_resamples(save_pred = TRUE, verbose = TRUE)
+
+
+
+lm_tuned <- lm_wf %>%
+  fit_resamples(.,
+                resamples = cv_splits,#cv_splits_geo
+                control   = control,
+                metrics   = metric_set(rmse, rsq))
+
+ps_tuned <- ps_wf %>%
+  fit_resamples(.,
+            resamples = cv_splits,#cv_splits_geo
+            control   = control,
+            metrics   = metric_set(rmse, rsq))
+
+rf_tuned <- rf_wf %>%
+  tune::tune_grid(.,
+                  resamples = cv_splits,#cv_splits_geo
+                  grid      = rf_grid,
+                  control   = control,
+                  metrics   = metric_set(rmse, rsq))
+
+
+show_best(lm_tuned, metric = "rmse", n = 15, maximize = FALSE)
+show_best(ps_tuned, metric = "rmse", n = 15, maximize = FALSE)
+show_best(rf_tuned, metric = "rmse", n = 15, maximize = FALSE)
+
+
+lm_best_params     <- select_best(lm_tuned, metric = "rmse", maximize = FALSE)
+ps_best_params     <- select_best(ps_tuned, metric = "rmse", maximize = FALSE)
+rf_best_params     <- select_best(rf_tuned, metric = "rmse", maximize = FALSE)
+
+
+# Pull best hyperparam preds from 10-fold cross validated predictions
+lm_best_OOF_preds <- collect_predictions(lm_tuned) 
+ps_best_OOF_preds <- collect_predictions(ps_tuned) 
+rf_best_OOF_preds <- collect_predictions(rf_tuned) %>% 
+  filter(mtry  == rf_best_params$mtry[1] & min_n == rf_best_params$min_n[1])
+
+
+lm_best_OOF_preds <- lm_best_OOF_preds %>% dplyr::select(-id,-.config) %>% 
+  mutate(.pred = exp(.pred)-1,
+         Count = exp(Count)-1)
+
+ps_best_OOF_preds <- ps_best_OOF_preds %>% dplyr::select(-id,-.config) %>% 
+  rename(Count = originalCount)
+
+rf_best_OOF_preds <- rf_best_OOF_preds %>% dplyr::select(-id,-.config) %>% 
+  rename(Count = originalCount)
+
+
+OOF_preds <- rbind(data.frame(lm_best_OOF_preds %>% dplyr::select(.pred,Count), model = "Linear Regression"),
+                   data.frame(ps_best_OOF_preds %>% dplyr::select(.pred,Count), model = "Poisson"),
+                   data.frame(rf_best_OOF_preds %>% dplyr::select(.pred,Count),model = "Random Forest")) %>% 
+  group_by(model) %>% 
+  mutate(
+    RMSE = yardstick::rmse_vec(Count, .pred),
+    MAE  = yardstick::mae_vec(Count, .pred),
+    MAPE = yardstick::mape_vec((Count+1), (.pred+1))) %>% 
+  ungroup()
+
+
+# average error for each model
+# RMSE
+ggplot(data = OOF_preds %>% 
+         dplyr::select(model, RMSE) %>% 
+         distinct() , 
+       aes(x = model, y = RMSE, group = 1)) +
+  geom_path(color = "red") +
+  geom_label(aes(label = round(RMSE,1))) +
+  theme_bw()
+
+# MAE
+ggplot(data = OOF_preds %>% 
+         dplyr::select(model, MAE) %>% 
+         distinct() , 
+       aes(x = model, y = MAE, group = 1)) +
+  geom_path(color = "red") +
+  geom_label(aes(label = round(MAE,1))) + 
+  theme_bw() 
+
+
+# Scatter plots: Predicted vs Observed
+ggplot(OOF_preds, aes(y=.pred , x = Count,group = model))+ 
+  geom_point(alpha = 0.3) +
+  coord_equal() +
+  geom_abline(linetype = "dashed",color = "red") +
+  geom_smooth(method="lm", color = "blue") +
+  facet_wrap(~model,ncol = 2)+
+  theme_bw()+
+  ylim(0,500)+
+  xlim(0,500)
+
+
+
+##===============Predict the test set=============####
+
+#Final workflow
+lm_best_wf     <- finalize_workflow(lm_wf, lm_best_params)
+ps_best_wf     <- finalize_workflow(ps_wf, ps_best_params)
+rf_best_wf     <- finalize_workflow(rf_wf, rf_best_params)
+
+
+lm_val_fit_geo <- lm_best_wf %>% 
+  last_fit(split     = data_split,
+           control   = control,
+           metrics   = metric_set(rmse, rsq))
+
+ps_val_fit_geo <- ps_best_wf %>% 
+  last_fit(split     = data_split,
+           control   = control,
+           metrics   = metric_set(rmse, rsq))
+
+rf_val_fit_geo <- rf_best_wf %>% 
+  last_fit(split     = data_split,
+           control   = control,
+           metrics   = metric_set(rmse, rsq))
+
+
+# collect test set predictions from last_fit model
+lm_val_pred_geo     <- collect_predictions(lm_val_fit_geo)
+ps_val_pred_geo     <- collect_predictions(ps_val_fit_geo)
+rf_val_pred_geo     <- collect_predictions(rf_val_fit_geo)
+
+lm_val_pred_geo <- lm_val_pred_geo %>% mutate(.pred = exp(.pred)-1,
+                                              Count = exp(Count)-1)
+
+
+ps_val_pred_geo <- ps_val_pred_geo %>% dplyr::select(-id,-.config) %>% 
+  rename(Count = originalCount)
+
+rf_val_pred_geo <- rf_val_pred_geo %>% dplyr::select(-id,-.config) %>% 
+  rename(Count = originalCount)
+
+
+# Aggregate test set predictions (they do not overlap with training prediction set, which is OOF_preds)
+val_preds <- rbind(data.frame(dplyr::select(lm_val_pred_geo, .pred, Count), model = "lm"),
+                   data.frame(dplyr::select(ps_val_pred_geo, .pred, Count), model = "PS"),
+                   data.frame(dplyr::select(rf_val_pred_geo, .pred, Count), model = "RF")
+                   ) %>% 
+  group_by(model) %>% 
+  mutate(RMSE = yardstick::rmse_vec(Count, .pred),
+         MAE  = yardstick::mae_vec(Count, .pred),
+         MAPE = yardstick::mape_vec((Count+1), (.pred+1)),
+         absE=abs(Count-.pred)) %>% 
+  ungroup()
+
+
+# MAE chart
+ggplot(data = val_preds %>% 
+         dplyr::select(model, MAE) %>% 
+         distinct() , 
+       aes(x = model, y = MAE,group = 1)) +
+  geom_path(color = "red") +
+  geom_label(aes(label = round(MAE,1))) + 
+  theme_bw() 
+
+# Observed vs. Predicted on the test set
+ggplot(val_preds, aes(y=.pred , x = Count,group = model))+ 
+  geom_point(alpha = 0.3) +
+  coord_equal() +
+  geom_abline(linetype = "dashed",color = "red") +
+  geom_smooth(method="lm", color = "blue") +
+  facet_wrap(~model,ncol = 2)+
+  theme_bw()+
+  ylim(0,500)+
+  xlim(0,500)
+
+
+
+##===============Find where the model performs well=============####
+
+# First extract work flow 
+rf_best_wf     <- finalize_workflow(rf_wf, rf_best_params)
+# fit model on the whole dataset
+rf_wflow_final_fit <- fit(rf_best_wf, data = data)
+# extract recipe
+dat_recipe     <- pull_workflow_prepped_recipe(rf_wflow_final_fit)
+# extract fit
+rf_final_fit <- pull_workflow_fit(rf_wflow_final_fit)
+
+# predict bike counts for the whole dataset
+data$.pred <- predict(rf_final_fit, 
+                      new_data = bake(dat_recipe,data))$.pred
+
+data <- data %>% 
+  mutate(absE = abs(originalCount - .pred),# calculate absolute error
+         Count = Count - 1) 
+
+data$originalCount <- NULL 
+
+yardstick::mae_vec(data$Count, data$.pred)
+
+ggplot()+geom_histogram(data = data,aes(absE),binwidth = 1,fill="#219ebc")
+
+# observed vs preicted by different characteristics
+ggplot(data, aes(y=.pred , x = Count,group = TRUCK_ROUT))+ 
+  geom_point(alpha = 0.3) +
+  coord_equal() +
+  geom_abline(linetype = "dashed",color = "red") +
+  geom_smooth(method="lm", color = "blue") +
+  facet_wrap(~TRUCK_ROUT,ncol = 2)+
+  theme_bw()+
+  ylim(0,500)+
+  xlim(0,500)+
+  labs(x = "Observed",
+       y = "Predicted",
+       title = "Observed vs. Predicted on the testing set")
+
+ggplot(data %>% filter(Number_Tra<6), aes(y=.pred , x = Count,group = Number_Tra))+ 
+  geom_point(alpha = 0.3) +
+  coord_equal() +
+  geom_abline(linetype = "dashed",color = "red") +
+  geom_smooth(method="lm", color = "blue") +
+  facet_wrap(~Number_Tra,ncol = 3)+
+  theme_bw()+
+  ylim(0,500)+
+  xlim(0,500)+
+  labs(x = "Observed",
+       y = "Predicted",
+       title = "Observed vs. Predicted on the testing set")
+
+
+# join the geometry
+data.geo <- data %>% left_join(info.Aug,by = "SegmentID") %>% st_as_sf()
+
+ggplot() +
+  geom_sf(data = boroughs_clip, fill = "#D4D4D4") +
+  geom_sf(data = data.geo, aes(colour = absE)) +
+  scale_colour_viridis(direction = -1, discrete = FALSE, option="viridis")+
+  labs(title="Absolute predicting Error on each road segment") +
+  mapTheme()
+
+# calculate error by neighborhoods
+data.nta <- data.geo %>% st_drop_geometry() %>% 
+  group_by(ntaname) %>% 
+  summarise(MAE = mean(absE))
+
+error.nta <- neighborhood %>% left_join(data.nta,by="ntaname")
+
+ggplot()+
+  geom_sf(data = error.nta, aes(fill=MAE)) +
+  scale_fill_viridis(direction = 1, discrete = FALSE, option="viridis")+
+  labs(title="MAE by neighborhoods") + mapTheme()
+
+
+# calculate error by boroughs
+data.geo <- data.geo %>% st_transform(crs = 4326)
+boroughs_clip <- boroughs_clip %>% st_transform(crs = 4326)
+data.boro <- st_join(st_centroid(data.geo),boroughs_clip,left=T)
+data.boro <- data.boro %>% st_drop_geometry() %>% 
+  group_by(boro_name) %>% 
+  summarise(MAE = mean(absE))
+
+error.boro <- boroughs_clip %>% left_join(data.boro,by="boro_name")
+
+ggplot()+
+  geom_sf(data = error.boro, aes(fill=MAE)) +
+  scale_fill_viridis(direction = 1, discrete = FALSE, option="viridis")+
+  labs(title="MAE by neighborhoods") + mapTheme()
 
 
 ```
