@@ -104,7 +104,7 @@ p.mat<- cor_pmat(numericVars)
 
 # 1. Introduction
 ## 1.1 About this Project
-This project developed a method of **predicting bikeshare trips** in New York City with emphasis on the effect of **bicycle infrastructure**, such as bike lanes. We used our modeling predictions to explore bike planning scenarios in New York City. This project is one of the first to use data capturing the *unique routes taken by each bikeshare trip*, so the methods used herein could be applied to other similar datasets. This document will outline the motivation for our project, exploratory analysis, feature engineering and model building, and the scenario planning tool displayed in our application. 
+This project developed a method of **predicting bikeshare trips** in New York City with emphasis on the effect of **bicycle infrastructure**, such as bike lanes. We used our modeling predictions to explore bike planning scenarios in New York City. This project is one of the first to use data capturing the *unique routes taken by each bikeshare trip*, so the methods used herein could be applied to other similar datasets. This document will outline the motivation for our project, exploratory analysis, feature engineering and model building, and the scenario planning tool displayed in our [application](https://kateesutt.github.io/practicum-nycdot/website/page). 
 
 This project was completed for the final capstone in the **Master of Urban Spatial Analytics** program at the **University of Pennsylvania**. We are very thankful to our instructors, Ken Steif, Michael Fichman, and Matt Harris, for their insight and patient guidance as we undertook this large task. We are also incredibly grateful and indebted to our clients, Kyle Yakal-Kremski, Apaar Bansal, and Paula Rubira from the **New York City Department of Transportation**, for their generosity in sharing such a unique dataset with a group of students and working with us through this process.
 
@@ -484,6 +484,8 @@ ggplot(correlation.long_a, aes(Value, Count)) +
 
 ```
 
+
+### Multicollinearity
 We also analyzed these independent variables for multicollinearity, as shown in the plot below. The two most correlated features were median rent and the percentage of White residents. However, the correlation value between these two features was less than 0.8, so both were included. 
 
 ```{r, echo=FALSE, fig.height=5, fig.align='center', warning=FALSE, message=FALSE}
@@ -491,6 +493,8 @@ ggcorrplot(corr, hc.order = TRUE, type='lower', insig='blank')
 
 ```
 
+
+### Final Features
 Our final model included the following features: 
 
 * Street Network
