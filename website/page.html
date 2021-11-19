@@ -69,25 +69,25 @@
                 <h5>Project Goals</h5>
                 This is the project for MUSA practium, in year 2021.
                 <br>
-                The goal of the project is to predict the impacts of new bikelanes on bike riderships.
+                The goal of the project is to predict the impacts of new bike lanes on bike ridership.
                 <br>
-                Predicting the impact of a new bikelane on a particular street would give our client, the NYC DOT, and other users
-                an additional tool to use in deciding which streets to prioritize for bike lanes.
+                Predicting the impact of a new bikelane on a particular street would help our client, NYC DOT, and other users
+                prioritize streets for cycling infrastructure investments.
                 <br>
                 <br>
                 <h5>Page Instructions</h5>
                   <ul>
-                    <li><b>Let's Visualize</b></li>
+                    <li id='lets-visualize'><b>Let's Visualize</b></li>
                       <ul>
                         <li>
                           The choice of ridership is set as "checked" as default. 
-                          By clicking the button, we are able to visualize the bike riderships over our study area.
+                          By clicking the button, we are able to visualize the CitiBike ridership over our study area.
                         </li>
                         <li>
-                          Similarly, clicking buttons of bikelanes and bike stations enables us to see the bike lanes and bike stations over study area.
+                          Similarly, clicking the buttons for bike lanes and bike stations enables us to see the bike lanes and CitiBike stations throughout the study area.
                         </li>
                         <li>
-                          Clicking on each road segment, we are able to see the actual bike trips and the predicted biketrips.
+                          Clicking on each road segment, we are able to see the count of bike trips from our data, representing an total monthly count for August 2020 for a subset of CitiBike trips.
                         </li>
                       </ul>
                     
@@ -95,17 +95,17 @@
                       <ul>
                         <li>
                           There are three different scenarios. 
-                          Moreover, under each scenarios, choosing "Protected Bikelanes" visualizes predicted changes of bike trips from changing
-                          the roads to proteced bikelanes; alternatively, clicking "Unproteced Bikelanes" visualizes predicted changes of bike
-                          trips from changing the roads to unprotected bikelanes.
+                          Moreover, under each scenarios, choosing "Protected Bike Lanes" visualizes predicted changes of bike trips from changing
+                          the roads to proteced bike lanes; alternatively, clicking "Unproteced Bike Lanes" visualizes predicted changes of bike
+                          trips from changing the roads to unprotected bike lanes.
                         </li>
                         <li>
-                          There is only one choice, "Protected Bikelanes", under the Upper Manhattan scenario because around half of
-                          bikelanes under this scenario are already unprotected bikelanes. Therefore, only predictions of
-                          <i>Protected Bikelanes</i> are provided.
+                          There is only one choice, "Protected Bike Lanes", under the Upper Manhattan scenario because around half of
+                          bike lanes under this scenario are already unprotected bike lanes. Therefore, only predictions of
+                          <i>Protected Bike Lanes</i> are provided.
                         </li>
                         <li>
-                          Clicking on each road segment, we are able to see the actual bike trips and the predicted biketrips.
+                          Clicking on each road segment, we are able to see the observed bike trips and the predicted biketrips.
                         </li>
                       </ul>
                     
@@ -163,11 +163,11 @@
             </div>
             <div class="form-check form-switch">
               <input class="form-check-input" type="checkbox" id="bike-stations" unchecked>
-              <label class="form-check-label" for="flexSwitchCheckChecked">Bike Stations</label>
+              <label class="form-check-label" for="flexSwitchCheckChecked">CitiBike Stations</label>
           </div>
             <div class="form-check form-switch">
               <input class="form-check-input" type="checkbox" id="bike-trips" checked>
-              <label class="form-check-label" for="flexSwitchCheckChecked">Riderships</label>
+              <label class="form-check-label" for="flexSwitchCheckChecked">CitiBike Ridership</label>
             </div>
         </div>
         <br>
@@ -187,12 +187,12 @@
 
               <div class="form-check">
                 <input type="checkbox" value="" id="scenario1-protected">
-                <label class="scenario-type" for="scenario1-protected">Protected Bikelanes</label>
+                <label class="scenario-type" for="scenario1-protected">Protected Bike Lanes</label>
               </div>
 
               <div class="form-check">
                 <input type="checkbox" value="" id="scenario1-unprotected">
-                <label class="scenario-type" for="scenario1-unprotected">Unprotected Bikelanes</label>
+                <label class="scenario-type" for="scenario1-unprotected">Unprotected Bike Lanes</label>
               </div>
 
             </div>
@@ -203,7 +203,7 @@
 
                 <div class="form-check">
                   <input type="checkbox" value="" id="scenario2-protected">
-                  <label class="scenario-type" for="scenario2-protected">Protected Bikelanes</label>
+                  <label class="scenario-type" for="scenario2-protected">Protected Bike Lanes</label>
                 </div>
 
               </div>
@@ -213,12 +213,12 @@
 
                 <div class="form-check">
                   <input type="checkbox" value="" id="scenario3-protected">
-                  <label class="scenario-type" for="scenario3-protected">Protected Bikelanes</label>
+                  <label class="scenario-type" for="scenario3-protected">Protected Bike Lanes</label>
                 </div>
   
                 <div class="form-check">
                   <input type="checkbox" value="" id="scenario3-unprotected">
-                  <label class="scenario-type" for="scenario3-unprotected">Unprotected Bikelanes</label>
+                  <label class="scenario-type" for="scenario3-unprotected">Unprotected Bike Lanes</label>
                 </div>
 
               </div>
@@ -243,7 +243,8 @@
 
      <!-- Legend -->
      <div class="legend">
-    <p class="legend-text"><b>Number of Bike Trips</b></p>
+    <p class="legend-text"><b>Bike Trip Count</b></p>
+    <p class='legend-subtitle'><b>August 2020</b></p>
     <ul>
       <div class="legend-box" style="background: #6FA5C9; border: 1px #6FA5C9" id="one"></div>
       <p class="legend-text">0</p>

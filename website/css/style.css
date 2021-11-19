@@ -104,9 +104,24 @@ body {
     height: 15px; 
     left: 5%;
 }
+
+#lets-visualize{
+    margin-top:1rem;
+}
   
 .legend-text{
     text-indent:5px;
+    padding:0px;
+    margin-bottom:0.2rem;
+}
+
+.legend-subtitle{
+    text-indent:5px;
+    padding-top:0px;
+}
+
+p{
+    margin-bottom:0.5rem;
 }
 
 .scenario-type{
